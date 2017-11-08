@@ -1,0 +1,3 @@
+[submodule "DynareTransformationEngine"]
+	path = DynareTransformationEngine
+	url = https://github.com/tholden/DynareTransformationEngine.git
