@@ -3,4 +3,5 @@
 *.eps
 *.mat
 *-macroexp.mod
+*.m
 checksum
