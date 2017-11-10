@@ -1,0 +1,6 @@
+*.jnl
+*.log
+*.eps
+*.mat
+*-macroexp.mod
+checksum
