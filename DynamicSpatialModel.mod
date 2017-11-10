@@ -1,8 +1,10 @@
+@#includepath "DynareTransformationEngine"
+
 @#include "Initialize.mod"
 @#define UsingGrowthSyntax = 1
 
 @#define SpatialDimensions = 1
-@#define SpatialPointsPerDimension = 10
+@#define SpatialPointsPerDimension = 4
 @#define SpatialShape = "Torus"
 @#define SpatialNorm = "1"
 
@@ -18,7 +20,13 @@
 
 @#include "CreateShocks.mod"
 
-@#define EndoVariables = EndoVariables + [ "R", "0", "Inf", 1 ]
+@#define EndoVariables = EndoVariables + [ "R", "0", "Inf", "1" ]
+@#define EndoVariables = EndoVariables + [ "GYTrend", "0", "Inf", "1" ]
+@#define EndoVariables = EndoVariables + [ "GZTrend", "0", "Inf", "1" ]
+@#define EndoVariables = EndoVariables + [ "GFTrend", "0", "Inf", "1" ]
+@#define EndoVariables = EndoVariables + [ "GPTrend", "0", "Inf", "1" ]
+@#define EndoVariables = EndoVariables + [ "GUTrend", "0", "Inf", "1" ]
+@#define EndoVariables = EndoVariables + [ "GmuNTrend", "0", "Inf", "1" ]
 
 @#for Point in 1 : SpatialNumPoints
     @#define Index1 = IndicesStringArray[Point]
@@ -66,20 +74,20 @@ model;
     
     #MaxDistance = 0.5;
 
-    #  GYTrend    = ( GA * GN ) ^ ( ( 1 - alpha ) * ( 1 - kappa ) * ( 1 + lambda ) / ( ( 1 - alpha ) * ( 1 - kappa ) * ( 1 + lambda ) - lambda ) );
-    #  GZTrend    = GYTrend ^ ( 1 / ( 1 + lambda ) );
+       GYTrend    = ( GA * GN ) ^ ( ( 1 - alpha ) * ( 1 - kappa ) * ( 1 + lambda ) / ( ( 1 - alpha ) * ( 1 - kappa ) * ( 1 + lambda ) - lambda ) );
+       GZTrend    = GYTrend ^ ( 1 / ( 1 + lambda ) );
     // GJTrend    = GYTrend ^ ( 1 / ( 1 + lambda ) );
-    #  GFTrend    = GYTrend ^ ( ( 1 - gamma ) / ( 1 + lambda ) );
+       GFTrend    = GYTrend ^ ( ( 1 - gamma ) / ( 1 + lambda ) );
     // GSRLTrend  = GYTrend ^ ( ( 1 - gamma ) / ( 1 + lambda ) );
     // GWTrend    = GYTrend ^ ( ( 1 - gamma ) / ( 1 + lambda ) ) / GN;
-    #  GPTrend    = GYTrend ^ ( - ( gamma + lambda ) / ( 1 + lambda ) );
+       GPTrend    = GYTrend ^ ( - ( gamma + lambda ) / ( 1 + lambda ) );
     // GQTrend    = GYTrend ^ ( - ( gamma + lambda ) / ( 1 + lambda ) );
     // GSRKTrend  = GYTrend ^ ( - ( gamma + lambda ) / ( 1 + lambda ) );
     // GSPTrend   = GYTrend ^ ( - gamma / ( 1 + lambda ) );
     // GPiTrend   = GYTrend ^ ( - gamma / ( 1 + lambda ) );
     // GYBarTrend = GYTrend ^ ( - gamma / lambda );
-    #  GUTrend    = GYTrend ^ ( thetaC + thetaF * ( 1 - gamma ) / ( 1 + lambda ) ) / GN ^ ( thetaC + thetaF + thetaL );
-    #  GmuNTrend  = GYTrend ^ ( (  thetaC + thetaF * ( 1 - gamma ) / ( 1 + lambda ) ) * ( 1 - varsigma ) ) / GN ^ ( ( thetaC + thetaF + thetaL ) * ( 1 - varsigma ) );
+       GUTrend    = GYTrend ^ ( thetaC + thetaF * ( 1 - gamma ) / ( 1 + lambda ) ) / GN ^ ( thetaC + thetaF + thetaL );
+       GmuNTrend  = GYTrend ^ ( (  thetaC + thetaF * ( 1 - gamma ) / ( 1 + lambda ) ) * ( 1 - varsigma ) ) / GN ^ ( ( thetaC + thetaF + thetaL ) * ( 1 - varsigma ) );
     
     #N = ( 0
     @#for Point1 in 1 : SpatialNumPoints
@@ -99,12 +107,13 @@ model;
         @#define Index1 = IndicesStringArray[Point1]
         
         #A@{Index1} = AP * AT@{Index1};
+        #A@{Index1}_LEAD = AP_LEAD * AT@{Index1}_LEAD;
         
-        #ZF@{Index1} = ( F@{Index1} / L@{Index1} ^ gamma ) ^ ( 1 / ( 1 - gamma );
+        #ZF@{Index1} = ( F@{Index1} / L@{Index1} ^ gamma ) ^ ( 1 / ( 1 - gamma ) );
         #SRL@{Index1} = gamma * F@{Index1} / L@{Index1};
         #SP@{Index1} = ( 1 - gamma ) * F@{Index1} / ZF@{Index1};
 
-        #ZF@{Index1}_LEAD = ( F@{Index1}_LEAD / L@{Index1}_LEAD ^ gamma ) ^ ( 1 / ( 1 - gamma );
+        #ZF@{Index1}_LEAD = ( F@{Index1}_LEAD / L@{Index1}_LEAD ^ gamma ) ^ ( 1 / ( 1 - gamma ) );
         #SP@{Index1}_LEAD = ( 1 - gamma ) * F@{Index1}_LEAD / ZF@{Index1}_LEAD;
         
         K@{Index1} = ( 1 - deltaK ) * K@{Index1}_LAG + ( 1 - Phi2 / 2 * ( I@{Index1} / I@{Index1}_LAG - 1 ) ^ 2 ) * I@{Index1};
@@ -135,7 +144,7 @@ model;
         @#endfor
         ) / @{SpatialNumPoints} );
         
-        muN@{Index1} = beta * ( muN@{Index1}_LEAD * GN@{Index1}_LEAD + U@{Index1}_LEAD ^ ( 1 - varsigma ) + ( 1 - varsigma ) * U@{Index1}_LEAD ^ ( 1 - varsigma ) * ( thetaH * ( H@{Index1}_LEAD / N@{Index1} ) ^ ( 1 + nu ) / ( 1 / ( 1 + nu ) * Gamma ^ ( 1 + nu ) - 1 / ( 1 + nu ) * ( H@{Index1}_LEAD / N@{Index1} ) ^ ( 1 + nu ) ) + psi1 * SN@{Index1}_LEAD / ( N@{Index1} - SN@{Index1}_LEAD ) - ( thetaC + thetaF + thetaL + psi3 ) ) );
+        muN@{Index1} = beta * ( muN@{Index1}_LEAD * GN_LEAD + U@{Index1}_LEAD ^ ( 1 - varsigma ) + ( 1 - varsigma ) * U@{Index1}_LEAD ^ ( 1 - varsigma ) * ( thetaH * ( H@{Index1}_LEAD / N@{Index1} ) ^ ( 1 + nu ) / ( 1 / ( 1 + nu ) * Gamma ^ ( 1 + nu ) - 1 / ( 1 + nu ) * ( H@{Index1}_LEAD / N@{Index1} ) ^ ( 1 + nu ) ) + psi1 * SN@{Index1}_LEAD / ( N@{Index1} - SN@{Index1}_LEAD ) - ( thetaC + thetaF + thetaL + psi3 ) ) );
     @#endfor
     
     @#define Index1 = IndicesStringArray[1]
@@ -200,7 +209,7 @@ model;
         
         phi * SP@{Index1} = Pi@{Index1} + ( 1 - deltaJ ) * Xi_LEAD * phi_LEAD * SP@{Index1}_LEAD;
         
-        Z@{Index1} = ZF@{Index1} + phi * ( J@{Index1} - ( 1 - deltaJ ) * J@{Index1}_LAG ) + J@{Index1} * ( ( 1 + lambda ) * SP@{Index1} ) ^ ( - ( 1 + lambda ) / lambda ) *  YBarSP@{Index1};
+        Z@{Index1} = ZF@{Index1} + phi * ( J@{Index1} - ( 1 - deltaJ ) * J@{Index1}_LAG ) + J@{Index1} * ( ( 1 + lambda ) * SP@{Index1} ) ^ ( - ( 1 + lambda ) / lambda ) *  YBar@{Index1};
     @#endfor
     
     1 = R * Xi_LEAD;
