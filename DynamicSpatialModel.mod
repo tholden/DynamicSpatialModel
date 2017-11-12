@@ -61,12 +61,12 @@ deltaJ = 0.01;
 deltaK = 0.03;
 Phi2 = 4;
 thetaC = 0.15;
-thetaF = 0.15;
-thetaL = 0.3;
-thetaH = 0.3;
+thetaF = 0.05;
+thetaL = 0.5;
+thetaH = 0.2;
 psi1 = 0.05;
 psi3 = psi1 * 0.02 / ( 1 - 0.02 ); // http://eyeonhousing.org/2013/01/latest-study-shows-average-buyer-expected-to-stay-in-a-home-13-years/
-psi2 = 0.1 - psi1 - psi3;
+psi2 = 1 - thetaC - thetaF - thetaL - thetaH - psi1 - psi3;
 Gamma = 1;
 
 model;
@@ -369,7 +369,7 @@ end;
 options_.qz_criterium = 1 - 1e-8;
 
 steady;
-// check;
+check;
 
 @#if LoadSteadyState
     save_params_and_steady_state( 'SteadyState2.txt' );
