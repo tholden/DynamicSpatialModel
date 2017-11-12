@@ -3,5 +3,10 @@
 *.eps
 *.mat
 *-macroexp.mod
-*.m
+*.asv
+*_dynamic.m
+*_set_auxiliary_variables.m
+*_static.m
+
 checksum
+DynamicSpatialModel.m
