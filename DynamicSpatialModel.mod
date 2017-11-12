@@ -4,7 +4,7 @@
 @#define UsingGrowthSyntax = 1
 
 @#define SpatialDimensions = 1
-@#define SpatialPointsPerDimension = 3
+@#define SpatialPointsPerDimension = 6
 @#define SpatialShape = "Torus"
 @#define SpatialNorm = "1"
 
@@ -234,8 +234,16 @@ model;
     
 end;
 
+@#define Deterministic = 0
+
 shocks;
-    @#include "InsertNewShockBlockLines.mod"
+    @#if Deterministic
+        var epsilon_AT_1;
+        periods 1:10;
+        values 1;
+    @#else
+        @#include "InsertNewShockBlockLines.mod"
+    @#endif
 end;
 
 @#define LoadSteadyState = 0
@@ -309,11 +317,6 @@ end;
         H_1_ = GetH_1_( 1 );
         Q_1_ = GetQ_1_( 1 );
         
-        //F_1_ = 0.075542901703709794403;
-        //K_1_ = 0.52703857490664596241;
-        //H_1_ = 0.56369478620728186158;
-        //Q_1_ = 1.6973472492283716573;
-        
         ZF_1_ = ( F_1_ / L_1_ ^ gamma ) ^ ( 1 / ( 1 - gamma ) );
         SP_1_ = ( 1 - gamma ) * F_1_ / ZF_1_;
         P_1_ = P_1_Over_Q_1_ * Q_1_;
@@ -366,7 +369,7 @@ end;
 options_.qz_criterium = 1 - 1e-8;
 
 steady;
-check;
+// check;
 
 @#if LoadSteadyState
     save_params_and_steady_state( 'SteadyState2.txt' );
@@ -374,4 +377,8 @@ check;
     save_params_and_steady_state( 'SteadyState.txt' );
 @#endif
 
-stoch_simul( order = 1, irf = 0, periods = 1000, nocorr, nofunctions ) log_R;
+@#if Deterministic
+    simul( periods = 1000, maxit = 1000000, tolf = 1e-8, tolx = 1e-8 ); // endogenous_terminal_period
+@#else
+    stoch_simul( order = 1, irf = 0, periods = 10000, nocorr, nofunctions ); // k_order_solver
+@#endif
