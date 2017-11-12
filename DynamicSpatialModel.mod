@@ -4,7 +4,7 @@
 @#define UsingGrowthSyntax = 1
 
 @#define SpatialDimensions = 1
-@#define SpatialPointsPerDimension = 2
+@#define SpatialPointsPerDimension = 3
 @#define SpatialShape = "Torus"
 @#define SpatialNorm = "1"
 
@@ -156,7 +156,7 @@ model;
         E@{Index1} / N@{Index1}_LAG / U@{Index1} ^ ( 1 - varsigma ) = E@{Index2} / N@{Index2}_LAG / U@{Index2} ^ ( 1 - varsigma );
     @#endfor
 
-    @#for Point1 in 1 : SpatialNumPoints
+    @#for Point1 in 2 : SpatialNumPoints
         @#define Index1 = IndicesStringArray[Point1]
 
         N@{Index1} = GN * N@{Index1}_LAG - SN@{Index1} + ( 0
@@ -165,6 +165,17 @@ model;
             + SN@{Index2}@{Index1}
         @#endfor
         ) / @{SpatialNumPoints};
+    @#endfor
+    
+    1 = ( 0
+    @#for Point2 in 1 : SpatialNumPoints
+        @#define Index2 = IndicesStringArray[Point2]
+        + N@{Index2}
+    @#endfor
+    ) / @{SpatialNumPoints};    
+
+    @#for Point1 in 1 : SpatialNumPoints
+        @#define Index1 = IndicesStringArray[Point1]
         
         #P@{Index1} = ( 1 + lambda ) * ( ( 0
         @#for Point2 in 1 : SpatialNumPoints
@@ -227,127 +238,140 @@ shocks;
     @#include "InsertNewShockBlockLines.mod"
 end;
 
-steady_state_model;
-    @#include "InsertNewStartSteadyStateEquations.mod"
-    
-    MaxDistance_ = 0.5;
+@#define LoadSteadyState = 0
 
-    GYTrend_    = ( GA_ * GN_ ) ^ ( ( 1 - alpha ) * ( 1 - kappa ) * ( 1 + lambda ) / ( ( 1 - alpha ) * ( 1 - kappa ) * ( 1 + lambda ) - lambda ) );
-    GZTrend_    = GYTrend_ ^ ( 1 / ( 1 + lambda ) );
-    GFTrend_    = GYTrend_ ^ ( ( 1 - gamma ) / ( 1 + lambda ) );
-    GPTrend_    = GYTrend_ ^ ( - ( gamma + lambda ) / ( 1 + lambda ) );
-    GUTrend_    = GYTrend_ ^ ( thetaC + thetaF * ( 1 - gamma ) / ( 1 + lambda ) ) / GN_ ^ ( thetaC + thetaF + thetaL );
-    GmuNTrend_  = GYTrend_ ^ ( (  thetaC + thetaF * ( 1 - gamma ) / ( 1 + lambda ) ) * ( 1 - varsigma ) ) / GN_ ^ ( ( thetaC + thetaF + thetaL ) * ( 1 - varsigma ) );
+@#if LoadSteadyState
 
-    GSPTrend_   = GYTrend_ ^ ( - gamma / ( 1 + lambda ) );
-    GQTrend_    = GYTrend_ ^ ( - ( gamma + lambda ) / ( 1 + lambda ) );
-    GSRKTrend_  = GYTrend_ ^ ( - ( gamma + lambda ) / ( 1 + lambda ) );
-    GJTrend_    = GYTrend_ ^ ( 1 / ( 1 + lambda ) );
+    load_params_and_steady_state( 'SteadyState.txt' );
 
-    Xi_LEAD_ = beta_ * GN_ / GFTrend_ * GUTrend_ ^ ( 1 - varsigma );
+@#else
 
-    L_1_ = thetaF * gamma / ( thetaL + thetaF * gamma );
+    steady_state_model;
+        @#include "InsertNewStartSteadyStateEquations.mod"
+        
+        MaxDistance_ = 0.5;
 
-    R_ = 1 / Xi_LEAD_;
+           GYTrend_    = ( GA_ * GN_ ) ^ ( ( 1 - alpha ) * ( 1 - kappa ) * ( 1 + lambda ) / ( ( 1 - alpha ) * ( 1 - kappa ) * ( 1 + lambda ) - lambda ) );
+           GZTrend_    = GYTrend_ ^ ( 1 / ( 1 + lambda ) );
+           GJTrend_    = GYTrend_ ^ ( 1 / ( 1 + lambda ) );
+           GFTrend_    = GYTrend_ ^ ( ( 1 - gamma ) / ( 1 + lambda ) );
+        // GSRLTrend_  = GYTrend_ ^ ( ( 1 - gamma ) / ( 1 + lambda ) );
+        // GWTrend_    = GYTrend_ ^ ( ( 1 - gamma ) / ( 1 + lambda ) ) / GN_;
+           GPTrend_    = GYTrend_ ^ ( - ( gamma + lambda ) / ( 1 + lambda ) );
+           GQTrend_    = GYTrend_ ^ ( - ( gamma + lambda ) / ( 1 + lambda ) );
+           GSRKTrend_  = GYTrend_ ^ ( - ( gamma + lambda ) / ( 1 + lambda ) );
+           GSPTrend_   = GYTrend_ ^ ( - gamma / ( 1 + lambda ) );
+        // GPiTrend_   = GYTrend_ ^ ( - gamma / ( 1 + lambda ) );
+        // GYBarTrend_ = GYTrend_ ^ ( - gamma / lambda );
+           GUTrend_    = GYTrend_ ^ ( thetaC + thetaF * ( 1 - gamma ) / ( 1 + lambda ) ) / GN_ ^ ( thetaC + thetaF + thetaL );
+           GmuNTrend_  = GYTrend_ ^ ( (  thetaC + thetaF * ( 1 - gamma ) / ( 1 + lambda ) ) * ( 1 - varsigma ) ) / GN_ ^ ( ( thetaC + thetaF + thetaL ) * ( 1 - varsigma ) );
 
-    N_1_ = 1;
-    N_ = N_1_;
+        Xi_LEAD_ = beta_ * GN_ / GFTrend_ * GUTrend_ ^ ( 1 - varsigma );
 
-    N_1_LAG_ = 1 / GN_;
-    N_LAG_ = N_1_LAG_;
+        L_1_ = thetaF * gamma / ( thetaL + thetaF * gamma );
 
-    SN_1_ = psi3 / ( psi1 + psi3 ) * N_1_LAG_;
+        R_ = 1 / Xi_LEAD_;
 
-    SD_1_ = GetSD_1_( psi1, psi2, psi3, N_1_LAG_, SN_1_, MaxDistance_
-    @#for Point2 in 1 : SpatialNumPoints
-        @#define Index2 = IndicesStringArray[Point2]
-        , Distance_1@{Index2}_ 
-    @#endfor
-    );    
+        N_1_ = 1;
+        N_ = N_1_;
 
-    @#for Point2 in 1 : SpatialNumPoints
-        @#define Index2 = IndicesStringArray[Point2]
-        SN_1_@{Index2}_ = psi3 / ( psi1 / ( N_1_LAG_ - SN_1_ ) + psi2 * ( Distance_1@{Index2}_ * SN_1_ - SD_1_ ) / ( MaxDistance_ * SN_1_ * SN_1_ - SN_1_ * SD_1_ ) );
-    @#endfor
+        N_1_LAG_ = 1 / GN_;
+        N_LAG_ = N_1_LAG_;
 
-    A_1_ = 1;
-    A_1_LEAD_ = GA_;
+        SN_1_ = psi3 / ( psi1 + psi3 ) * N_1_LAG_;
 
-    AverageTransportCost_ = ( ( 0
-    @#for Point2 in 1 : SpatialNumPoints
-        @#define Index2 = IndicesStringArray[Point2]
-        + exp( - tau_ / lambda * Distance_1@{Index2}_ )
-    @#endfor
-    ) / @{SpatialNumPoints} ) ^ ( - lambda );
+        SD_1_ = GetSD_1_( psi1, psi2, psi3, N_1_LAG_, SN_1_, MaxDistance_
+        @#for Point2 in 1 : SpatialNumPoints
+            @#define Index2 = IndicesStringArray[Point2]
+            , Distance_1@{Index2}_ 
+        @#endfor
+        );    
 
-    P_1_Over_Q_1_ = ( 1 - Phi2 / 2 * ( GYTrend_ - 1 ) ^ 2 - Phi2 * ( GYTrend_ - 1 ) * GYTrend_ ) + Xi_LEAD_ * GQTrend_ * Phi2 * ( GYTrend_ - 1 ) * GYTrend_ ^ 2;
+        @#for Point2 in 1 : SpatialNumPoints
+            @#define Index2 = IndicesStringArray[Point2]
+            SN_1_@{Index2}_ = psi3 / ( psi1 / ( N_1_LAG_ - SN_1_ ) + psi2 * ( Distance_1@{Index2}_ * SN_1_ - SD_1_ ) / ( MaxDistance_ * SN_1_ * SN_1_ - SN_1_ * SD_1_ ) );
+        @#endfor
 
-    // Good up to here
+        A_1_ = 1;
+        A_1_LEAD_ = GA_;
 
-        // SP_1_ = ( 1 - gamma ) * F_1_ / ( F_1_ / L_1_ ^ gamma ) ^ ( 1 / ( 1 - gamma ) );
+        AverageTransportCost_ = ( ( 0
+        @#for Point2 in 1 : SpatialNumPoints
+            @#define Index2 = IndicesStringArray[Point2]
+            + exp( - tau_ / lambda * Distance_1@{Index2}_ )
+        @#endfor
+        ) / @{SpatialNumPoints} ) ^ ( - lambda );
 
-        // P_1_ = ( 1 + lambda ) * ( ( Z_1_ - ( F_1_ / L_1_ ^ gamma ) ^ ( 1 / ( 1 - gamma ) ) ) / ( phi_ * ( 1 - ( 1 - deltaJ ) / GJTrend_ ) + ( ( 1 + lambda ) * SP_1_ ) ^ ( - ( 1 + lambda ) / lambda ) *  YBar_1_ ) ) ^ ( - lambda ) * SP_1_ * AverageTransportCost_;
+        P_1_Over_Q_1_ = ( 1 - Phi2 / 2 * ( GYTrend_ - 1 ) ^ 2 - Phi2 * ( GYTrend_ - 1 ) * GYTrend_ ) + Xi_LEAD_ * GQTrend_ * Phi2 * ( GYTrend_ - 1 ) * GYTrend_ ^ 2;
 
-        // // To solve for F_1_, Z_1_, YBar_1_
-        // Z_1_ = A_1_ * ( thetaF * N_1_ / F_1_ * ( 1 - kappa ) * ( 1 - alpha ) * SP_1_ * Z_1_ / ( 1 + nu ) * Gamma ^ ( 1 + nu ) / ( thetaH / N_1_LAG_ ^ nu + thetaF * N_1_ / F_1_ * ( 1 - kappa ) * ( 1 - alpha ) * SP_1_ * Z_1_ / ( 1 + nu ) / N_1_LAG_ ^ ( 1 + nu ) ) ) ^ ( 1 / ( 1 + nu ) ) * ( ( ( 1 - kappa ) * alpha * SP_1_ * GSRKTrend_ * P_1_Over_Q_1_ / P_1_ / ( 1 / Xi_LEAD_ - GQTrend_ * ( 1 - deltaK ) ) ) ^ alpha * ( kappa * SP_1_ / P_1_ ) ^ ( kappa / ( 1 - kappa ) ) ) ^ ( 1 / ( 1 - alpha ) );
-        // YBar_1_ = ( thetaC * F_1_ / ( thetaF * P_1_ ) + ( 1 - kappa ) * alpha * SP_1_ * Z_1_ * GYTrend_ * GSRKTrend_ * P_1_Over_Q_1_ / P_1_ / ( 1 / Xi_LEAD_ - GQTrend_ * ( 1 - deltaK ) ) * ( 1 - ( 1 - deltaK ) / GYTrend_ ) / ( 1 - Phi2 / 2 * ( GYTrend_ - 1 ) ^ 2 ) + kappa * SP_1_ * Z_1_ / P_1_ ) * P_1_ ^ ( ( 1 + lambda ) / lambda ) * AverageTransportCost_ ^ ( - 1 / lambda );
-        // SP_1_ = ( ( phi_ - ( 1 - deltaJ ) * Xi_LEAD_ * phi_ * GSPTrend_ ) / ( lambda / ( 1 + lambda ) * ( 1 + lambda ) ^ ( - 1 / lambda ) / YBar_1_ ) ) ^ ( - lambda / ( 1 + lambda ) );
+        F_1_ = GetF_1_( A_1_, N_1_, N_1_LAG_, nu, gamma, Gamma, L_1_, lambda, phi_, deltaJ, GJTrend_, AverageTransportCost_, thetaC, thetaF, thetaH, kappa, alpha, GYTrend_, GSRKTrend_, P_1_Over_Q_1_, Xi_LEAD_, deltaK, Phi2, GSPTrend_ );
+        K_1_ = GetK_1_( 1 );
+        H_1_ = GetH_1_( 1 );
+        Q_1_ = GetQ_1_( 1 );
+        
+        //F_1_ = 0.075542901703709794403;
+        //K_1_ = 0.52703857490664596241;
+        //H_1_ = 0.56369478620728186158;
+        //Q_1_ = 1.6973472492283716573;
+        
+        ZF_1_ = ( F_1_ / L_1_ ^ gamma ) ^ ( 1 / ( 1 - gamma ) );
+        SP_1_ = ( 1 - gamma ) * F_1_ / ZF_1_;
+        P_1_ = P_1_Over_Q_1_ * Q_1_;
+        Z_1_ = ( ( ( K_1_ / GYTrend_ ) ^ alpha * ( A_1_ * H_1_ ) ^ ( 1 - alpha ) ) ^ ( 1 - kappa ) * ( kappa * SP_1_ / P_1_ ) ^ kappa ) ^ ( 1 / ( 1 - kappa ) );
+        SRK_1_ = ( 1 - kappa ) * alpha * SP_1_ * Z_1_ / ( K_1_ / GYTrend_ );
+        W_1_ = ( 1 - kappa ) * ( 1 - alpha ) * SP_1_ * Z_1_ / H_1_;
+        C_1_ = thetaC * F_1_ / ( thetaF * P_1_ );
+        I_1_ = K_1_ * ( 1 - ( 1 - deltaK ) / GYTrend_ ) / ( 1 - Phi2 / 2 * ( GYTrend_ - 1 ) ^ 2 );
+        M_1_ = kappa * SP_1_ * Z_1_ / P_1_;
+        Y_1_ = C_1_ + I_1_ + M_1_;
+        YBar_1_ = Y_1_ * P_1_ ^ ( ( 1 + lambda ) / lambda ) * AverageTransportCost_ ^ ( - 1 / lambda );
+        Pi_1_ = lambda / ( 1 + lambda ) * ( 1 + lambda ) ^ ( - 1 / lambda ) * SP_1_ ^ ( - 1 / lambda ) * YBar_1_;
+        J_1_ = ( ( 1 + lambda ) * SP_1_ * AverageTransportCost_ / P_1_ ) ^ ( 1 / lambda );
+        E_1_ = F_1_;
 
-    // To be done at the end
+        U_1_ = ( C_1_ / N_1_LAG_ ) ^ thetaC * ( F_1_ / N_1_LAG_ ) ^ thetaF * ( ( 1 - L_1_ ) / N_1_LAG_ ) ^ thetaL * ( 1 / ( 1 + nu ) * Gamma ^ ( 1 + nu ) - 1 / ( 1 + nu ) * ( H_1_ / N_1_LAG_ ) ^ ( 1 + nu ) ) ^ thetaH * ( 1 - SN_1_ / N_1_LAG_ ) ^ psi1 * ( MaxDistance_ - SD_1_ / SN_1_ ) ^ psi2 * exp( psi3 * ( 0
+        @#for Point2 in 1 : SpatialNumPoints
+            @#define Index2 = IndicesStringArray[Point2]
+            + log( SN_1_@{Index2}_ / N_1_LAG_ )
+        @#endfor
+        ) / @{SpatialNumPoints} );
 
-    F_1_ = GetF_1_( A_1_, N_1_, N_1_LAG_, nu, gamma, Gamma, L_1_, lambda, phi_, deltaJ, GJTrend_, AverageTransportCost_, thetaC, thetaF, thetaH, kappa, alpha, GYTrend_, GSRKTrend_, P_1_Over_Q_1_, Xi_LEAD_, GQTrend_, deltaK, Phi2, GSPTrend_ );
-    Z_1_ = GetZ_1_( 1 );
-    YBar_1_ = GetYBar_1_( 1 );
-    SP_1_ = ( 1 - gamma ) * F_1_ / ( F_1_ / L_1_ ^ gamma ) ^ ( 1 / ( 1 - gamma ) );
-    P_1_ = ( 1 + lambda ) * ( ( Z_1_ - ( F_1_ / L_1_ ^ gamma ) ^ ( 1 / ( 1 - gamma ) ) ) / ( phi_ * ( 1 - ( 1 - deltaJ ) / GJTrend_ ) + ( ( 1 + lambda ) * SP_1_ ) ^ ( - ( 1 + lambda ) / lambda ) *  YBar_1_ ) ) ^ ( - lambda ) * SP_1_ * AverageTransportCost_;
-    H_1_ = ( thetaF * N_1_ / F_1_ * ( 1 - kappa ) * ( 1 - alpha ) * SP_1_ * Z_1_ / ( 1 + nu ) * Gamma ^ ( 1 + nu ) / ( thetaH / N_1_LAG_ ^ nu + thetaF * N_1_ / F_1_ * ( 1 - kappa ) * ( 1 - alpha ) * SP_1_ * Z_1_ / ( 1 + nu ) / N_1_LAG_ ^ ( 1 + nu ) ) ) ^ ( 1 / ( 1 + nu ) );
-    J_1_ = ( Z_1_ - ( F_1_ / L_1_ ^ gamma ) ^ ( 1 / ( 1 - gamma ) ) ) / ( phi_ * ( 1 - ( 1 - deltaJ ) / GJTrend_ ) + ( ( 1 + lambda ) * SP_1_ ) ^ ( - ( 1 + lambda ) / lambda ) *  YBar_1_ );
-    K_1_ = ( 1 - kappa ) * alpha * SP_1_ * Z_1_ * GYTrend_ * GSRKTrend_ * P_1_Over_Q_1_ / P_1_ / ( 1 / Xi_LEAD_ - GQTrend_ * ( 1 - deltaK ) );
-    W_1_ = ( 1 - kappa ) * ( 1 - alpha ) * SP_1_ * Z_1_ / H_1_;
-    SRL_1_ = gamma * F_1_ / L_1_;
-    ZF_1_ = ( F_1_ / L_1_ ^ gamma ) ^ ( 1 / ( 1 - gamma ) );
-    Q_1_ = P_1_ / P_1_Over_Q_1_;
-    C_1_ = thetaC * F_1_ / ( thetaF * P_1_ );
-    I_1_ = K_1_ * ( 1 - ( 1 - deltaK ) / GYTrend_ ) / ( 1 - Phi2 / 2 * ( GYTrend_ - 1 ) ^ 2 );
-    Pi_1_ = lambda / ( 1 + lambda ) * ( 1 + lambda ) ^ ( - 1 / lambda ) * SP_1_ ^ ( - 1 / lambda ) * YBar_1_;
-    M_1_ = kappa * SP_1_ * Z_1_ / P_1_;
-    Y_1_ = C_1_ + I_1_ + M_1_;
-    SRK_1_ = ( 1 - kappa ) * alpha * SP_1_ * Z_1_ / ( K_1_ / GYTrend_ );
-    E_1_ = F_1_;
+        U_1_LEAD_ = U_1_ * GUTrend_;
+        H_1_LEAD_ = H_1_ * GN_;
+        muN_1_ = beta_ * ( U_1_LEAD_ ^ ( 1 - varsigma ) + ( 1 - varsigma ) * U_1_LEAD_ ^ ( 1 - varsigma ) * ( thetaH * ( H_1_LEAD_ / N_1_ ) ^ ( 1 + nu ) / ( 1 / ( 1 + nu ) * Gamma ^ ( 1 + nu ) - 1 / ( 1 + nu ) * ( H_1_LEAD_ / N_1_ ) ^ ( 1 + nu ) ) + psi1 * SN_1_ * GN_ / ( N_1_ - SN_1_ * GN_ ) - ( thetaC + thetaF + thetaL + psi3 ) ) ) / ( 1 - beta_ * GmuNTrend_ * GN_ );
+        
+        @#for Point1 in 2 : SpatialNumPoints
+            @#define Index1 = IndicesStringArray[Point1]
+            C@{Index1}_ = C_1_;
+            K@{Index1}_ = K_1_;
+            I@{Index1}_ = I_1_;
+            E@{Index1}_ = E_1_;
+            F@{Index1}_ = F_1_;
+            Q@{Index1}_ = Q_1_;
+            J@{Index1}_ = J_1_;
+            L@{Index1}_ = L_1_;
+            H@{Index1}_ = H_1_;
+            N@{Index1}_ = N_1_;
+            SN@{Index1}_ = SN_1_;
+            SD@{Index1}_ = SD_1_;
+            muN@{Index1}_ = muN_1_;
+            U@{Index1}_ = U_1_;
+        @#endfor
+        
+        @#include "InsertNewEndSteadyStateEquations.mod"
+    end;
 
-    U_1_ = ( C_1_ / N_1_LAG_ ) ^ thetaC * ( F_1_ / N_1_LAG_ ) ^ thetaF * ( ( 1 - L_1_ ) / N_1_LAG_ ) ^ thetaL * ( 1 / ( 1 + nu ) * Gamma ^ ( 1 + nu ) - 1 / ( 1 + nu ) * ( H_1_ / N_1_LAG_ ) ^ ( 1 + nu ) ) ^ thetaH * ( 1 - SN_1_ / N_1_LAG_ ) ^ psi1 * ( MaxDistance_ - SD_1_ / SN_1_ ) ^ psi2 * exp( psi3 * ( 0
-    @#for Point2 in 1 : SpatialNumPoints
-        @#define Index2 = IndicesStringArray[Point2]
-        + log( SN_1_@{Index2}_ / N_1_LAG_ )
-    @#endfor
-    ) / @{SpatialNumPoints} );
+@#endif
 
-    U_1_LEAD_ = U_1_ * GUTrend_;
-    H_1_LEAD_ = H_1_ * GN_;
-    muN_1_ = beta_ * ( U_1_LEAD_ ^ ( 1 - varsigma ) + ( 1 - varsigma ) * U_1_LEAD_ ^ ( 1 - varsigma ) * ( thetaH * ( H_1_LEAD_ / N_1_ ) ^ ( 1 + nu ) / ( 1 / ( 1 + nu ) * Gamma ^ ( 1 + nu ) - 1 / ( 1 + nu ) * ( H_1_LEAD_ / N_1_ ) ^ ( 1 + nu ) ) + psi1 * SN_1_ * GN_ / ( N_1_ - SN_1_ * GN_ ) - ( thetaC + thetaF + thetaL + psi3 ) ) ) / ( 1 - beta_ * GmuNTrend_ * GN_ );
-    
-    @#for Point1 in 2 : SpatialNumPoints
-        @#define Index1 = IndicesStringArray[Point1]
-        C@{Index1}_ = C_1_;
-        K@{Index1}_ = K_1_;
-        I@{Index1}_ = I_1_;
-        E@{Index1}_ = E_1_;
-        F@{Index1}_ = F_1_;
-        Q@{Index1}_ = Q_1_;
-        J@{Index1}_ = J_1_;
-        L@{Index1}_ = L_1_;
-        H@{Index1}_ = H_1_;
-        N@{Index1}_ = N_1_;
-        SN@{Index1}_ = SN_1_;
-        SD@{Index1}_ = SD_1_;
-        muN@{Index1}_ = muN_1_;
-        U@{Index1}_ = U_1_;
-    @#endfor
-    
-    @#include "InsertNewEndSteadyStateEquations.mod"
-end;
+options_.qz_criterium = 1 - 1e-8;
 
 steady;
-//check;
+check;
+
+@#if LoadSteadyState
+    save_params_and_steady_state( 'SteadyState2.txt' );
+@#else
+    save_params_and_steady_state( 'SteadyState.txt' );
+@#endif
 
 stoch_simul( order = 1, irf = 0, periods = 1000, nocorr, nofunctions ) log_R;
