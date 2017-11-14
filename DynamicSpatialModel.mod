@@ -17,7 +17,7 @@
 
 @#define ShockProcesses = ShockProcesses + [ "GA", "0", "Inf", "1.005", "0.8", "0.001" ]
 @#define ShockProcesses = ShockProcesses + [ "GN", "0", "Inf", "1.0025", "0.5", "0.001" ]
-@#define ShockProcesses = ShockProcesses + [ "tau", "0", "Inf", "2", "0.95", "0.001" ]
+@#define ShockProcesses = ShockProcesses + [ "tau", "0", "Inf", "1", "0.95", "0.001" ]
 @#define ShockProcesses = ShockProcesses + [ "phi", "0", "Inf", "1", "0.95", "0.001" ]
 @#define ShockProcesses = ShockProcesses + [ "beta", "0", "1", "0.99", "0.95", "0.001" ]
 
