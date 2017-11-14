@@ -416,7 +416,7 @@ check;
 @#endif
 
 @#if Deterministic
-    simul( periods = 100000, maxit = 1000000, tolf = 1e-8, tolx = 1e-8, stack_solve_algo = 6 ); // endogenous_terminal_period
+    simul( periods = 10000, maxit = 1000000, tolf = 1e-8, tolx = 1e-8, stack_solve_algo = 6 ); // endogenous_terminal_period
 @#else
-    stoch_simul( order = 2, irf = 0, periods = 0, nocorr, nofunctions ); // k_order_solver
+    stoch_simul( order = 1, irf = 0, periods = 0, nocorr, nofunctions ); // k_order_solver
 @#endif
