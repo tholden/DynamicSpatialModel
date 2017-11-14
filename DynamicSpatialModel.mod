@@ -6,7 +6,11 @@
 @#define SpatialDimensions = 2
 @#define SpatialPointsPerDimension = 3
 @#define SpatialShape = "Torus"
-@#define SpatialNorm = "2"
+@#if SpatialDimensions == 1
+    @#define SpatialNorm = "1"
+@#else
+    @#define SpatialNorm = "2"
+@#endif
 
 @#define SpatialShockProcesses = SpatialShockProcesses + [ "AT", "0", "Inf", "1", "0.9", "0.001", "(exp(-zeta*@+zeta/2)+exp(zeta*@-zeta/2))/(exp(zeta/2)+exp(-zeta/2))#" ]
 
