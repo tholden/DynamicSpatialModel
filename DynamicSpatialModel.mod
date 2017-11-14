@@ -3,10 +3,10 @@
 @#include "Initialize.mod"
 @#define UsingGrowthSyntax = 1
 
-@#define SpatialDimensions = 1
-@#define SpatialPointsPerDimension = 20
+@#define SpatialDimensions = 2
+@#define SpatialPointsPerDimension = 3
 @#define SpatialShape = "Torus"
-@#define SpatialNorm = "1"
+@#define SpatialNorm = "2"
 
 @#define SpatialShockProcesses = SpatialShockProcesses + [ "AT", "0", "Inf", "1", "0.9", "0.001", "(exp(-zeta*@+zeta/2)+exp(zeta*@-zeta/2))/(exp(zeta/2)+exp(-zeta/2))#" ]
 
@@ -84,7 +84,7 @@ psi3 = psi3 / UtilityParamSum;
 
 Gamma = 1;
 Omega = 3; // pop/km^2 for the contiguous US is 41.5. for wyoming it is 2.33 for new jersey it is 470. correspond to abs log ratios of 2.88 and 2.43 respectively.
-dBar = 0.5;
+dBar = sqrt( @{SpatialDimensions} * ( 0.5 ^ 2 ) );
 
 model;
     @#include "InsertNewModelEquations.mod"
@@ -301,16 +301,17 @@ end;
 
         SN_1_ = psi3 / ( psi1 + psi3 ) * N_1_LAG_;
 
+        @#define Index1 = IndicesStringArray[1]
         SD_1_ = GetSD_1_( psi1, psi2, psi3, N_1_LAG_, SN_1_, dBar
         @#for Point2 in 1 : SpatialNumPoints
             @#define Index2 = IndicesStringArray[Point2]
-            , Distance_1@{Index2}_ 
+            , Distance@{Index1}@{Index2}_ 
         @#endfor
         );    
 
         @#for Point2 in 1 : SpatialNumPoints
             @#define Index2 = IndicesStringArray[Point2]
-            SN_1_@{Index2}_ = psi3 / ( psi1 / ( N_1_LAG_ - SN_1_ ) + psi2 * ( Distance_1@{Index2}_ * SN_1_ - SD_1_ ) / ( dBar * SN_1_ * SN_1_ - SN_1_ * SD_1_ ) );
+            SN@{Index1}@{Index2}_ = psi3 / ( psi1 / ( N_1_LAG_ - SN_1_ ) + psi2 * ( Distance@{Index1}@{Index2}_ * SN_1_ - SD_1_ ) / ( dBar * SN_1_ * SN_1_ - SN_1_ * SD_1_ ) );
         @#endfor
 
         A_1_ = 1;
@@ -319,7 +320,7 @@ end;
         AverageTransportCost_ = ( ( 0
         @#for Point2 in 1 : SpatialNumPoints
             @#define Index2 = IndicesStringArray[Point2]
-            + exp( - tau_ / lambda * Distance_1@{Index2}_ )
+            + exp( - tau_ / lambda * Distance@{Index1}@{Index2}_ )
         @#endfor
         ) / @{SpatialNumPoints} ) ^ ( - lambda );
 
@@ -355,7 +356,7 @@ end;
          * exp( psi3 * ( 0
         @#for Point2 in 1 : SpatialNumPoints
             @#define Index2 = IndicesStringArray[Point2]
-            + log( SN_1_@{Index2}_ / N_1_LAG_ )
+            + log( SN@{Index1}@{Index2}_ / N_1_LAG_ )
         @#endfor
         ) / @{SpatialNumPoints} );
 
@@ -363,7 +364,7 @@ end;
         H_1_LEAD_ = H_1_ * GN_;
         muN_1_ = beta_ * ( U_1_LEAD_ ^ ( 1 - varsigma ) + ( 1 - varsigma ) * U_1_LEAD_ ^ ( 1 - varsigma ) * ( thetaH * ( H_1_LEAD_ / N_1_ ) ^ ( 1 + nu ) / ( 1 / ( 1 + nu ) * Gamma ^ ( 1 + nu ) - 1 / ( 1 + nu ) * ( H_1_LEAD_ / N_1_ ) ^ ( 1 + nu ) ) + psi1 * SN_1_ * GN_ / ( N_1_ - SN_1_ * GN_ ) - ( thetaC + thetaF + thetaL + psi3 ) ) ) / ( 1 - beta_ * GmuNTrend_ * GN_ );
         
-        @#for Point1 in 2 : SpatialNumPoints
+        @#for Point1 in 1 : SpatialNumPoints
             @#define Index1 = IndicesStringArray[Point1]
             C@{Index1}_ = C_1_;
             K@{Index1}_ = K_1_;
