@@ -6,6 +6,7 @@
 @#define SpatialDimensions = 2
 @#define SpatialPointsPerDimension = 3
 @#define SpatialShape = "Torus"
+
 @#if SpatialDimensions == 1
     @#define SpatialNorm = "1"
 @#else
