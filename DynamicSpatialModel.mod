@@ -4,7 +4,7 @@
 @#define UsingGrowthSyntax = 1
 
 @#define SpatialDimensions = 2
-@#define SpatialPointsPerDimension = 3
+@#define SpatialPointsPerDimension = 7
 @#define SpatialShape = "Torus"
 
 @#if SpatialDimensions == 1
@@ -71,7 +71,7 @@ thetaC = 4;
 thetaF = 1; // food off-premises, food services + clothing = about 20% of ( PCE minus housing ) https://www.bea.gov/iTable/iTable.cfm?reqid=19&step=2#reqid=19&step=3&isuri=1&1910=x&0=-9&1921=survey&1903=65&1904=2015&1905=2017&1906=a&1911=0
 thetaL = 0.25 / 0.75 * thetaF * gamma; // target of 0.75 for steady-state land use in agriculture, following data from https://www.ers.usda.gov/data-products/major-land-uses/
 thetaH = 4;
-thetaN = 10;
+thetaN = 5.1;
 psi1 = 0.5;
 psi2 = 0.5;
 psi3 = psi1 * 0.02 / ( 1 - 0.02 ); // http://eyeonhousing.org/2013/01/latest-study-shows-average-buyer-expected-to-stay-in-a-home-13-years/
@@ -396,9 +396,14 @@ end;
 
 shocks;
     @#if Deterministic
-        var epsilon_AT_1;
-        periods 1;
-        values 1;
+        // This is row 25 of sqrtm( M_.Sigma_e( 6:end, 6:end ) ) when the model is run with Deterministic = 0
+        @#define ImpulseValues = [ "0.00106038678090531", "0.00248056820032931", "0.00437411378828992", "0.00547494741092683", "0.00437411378829032", "0.00248056820032921", "0.00106038678090554", "0.00248056820032921", "0.00902210802143465", "0.0207763593143100", "0.0291073294366574", "0.0207763593143104", "0.00902210802143461", "0.00248056820032917", "0.00437411378829026", "0.0207763593143099", "0.0724703279909494", "0.137784991610508", "0.0724703279909493", "0.0207763593143105", "0.00437411378829027", "0.00547494741092697", "0.0291073294366577", "0.137784991610508", "0.946339741796022", "0.137784991610508", "0.0291073294366580", "0.00547494741092697", "0.00437411378829007", "0.0207763593143103", "0.0724703279909492", "0.137784991610508", "0.0724703279909495", "0.0207763593143103", "0.00437411378829017", "0.00248056820032901", "0.00902210802143465", "0.0207763593143105", "0.0291073294366577", "0.0207763593143104", "0.00902210802143456", "0.00248056820032906", "0.00106038678090525", "0.00248056820032913", "0.00437411378829026", "0.00547494741092730", "0.00437411378829021", "0.00248056820032881", "0.00106038678090540" ]
+        @#for Point1 in 1 : SpatialNumPoints
+            @#define Index1 = IndicesStringArray[Point1]
+            var epsilon_AT@{Index1};
+            periods 1;
+            values @{ImpulseValues[Point1]};
+        @#endfor
     @#else
         @#include "InsertNewShockBlockLines.mod"
     @#endif
@@ -416,7 +421,7 @@ check;
 @#endif
 
 @#if Deterministic
-    simul( periods = 10000, maxit = 1000000, tolf = 1e-8, tolx = 1e-8, stack_solve_algo = 6 ); // endogenous_terminal_period
+    simul( periods = 10000, maxit = 1000000, tolf = 1e-8, tolx = 1e-8, stack_solve_algo = 7, solve_algo = 0 ); // endogenous_terminal_period
 @#else
-    stoch_simul( order = 1, irf = 0, periods = 0, nocorr, nofunctions ); // k_order_solver
+    stoch_simul( order = 1, irf = 400, periods = 0, nocorr, nofunctions, nodisplay, nograph ); // k_order_solver
 @#endif
