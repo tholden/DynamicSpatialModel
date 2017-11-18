@@ -13,7 +13,11 @@
     @#define SpatialNorm = "2"
 @#endif
 
-@#define SpatialShockProcesses = SpatialShockProcesses + [ "AT", "0", "Inf", "1", "0.9", "0.001", "(exp(-zeta*@+zeta*dBar)+exp(zeta*@-zeta*dBar))/(exp(zeta*dBar)+exp(-zeta*dBar))#" ]
+@#if SpatialShape[1] == "P"
+    @#define SpatialShockProcesses = SpatialShockProcesses + [ "AT", "0", "Inf", "1", "0.9", "0.001", "exp(-zeta*@)#" ]
+@#else
+    @#define SpatialShockProcesses = SpatialShockProcesses + [ "AT", "0", "Inf", "1", "0.9", "0.001", "(exp(-zeta*@+zeta*dBar)+exp(zeta*@-zeta*dBar))/(exp(zeta*dBar)+exp(-zeta*dBar))#" ]
+@#endif
 
 @#define ShockProcesses = ShockProcesses + [ "GA", "0", "Inf", "1.005", "0.8", "0.001" ]
 @#define ShockProcesses = ShockProcesses + [ "GN", "0", "Inf", "1.0025", "0.5", "0.001" ]
@@ -102,7 +106,12 @@ psi3 = psi3 / UtilityParamSum;
 
 Gamma = 1;
 Omega = 3; // pop/km^2 for the contiguous US is 41.5. for wyoming it is 2.33 for new jersey it is 470. correspond to abs log ratios of 2.88 and 2.43 respectively.
-dBar = sqrt( @{SpatialDimensions} * ( 0.5 ^ 2 ) );
+
+@#if SpatialShape[1] == "P"
+    dBar = ( @{SpatialDimensions} ) ^ ( 1 / ( @{SpatialNorm} ) );
+@#else
+    dBar = ( @{SpatialDimensions} * ( 0.5 ^ ( @{SpatialNorm} ) ) ) ^ ( 1 / ( @{SpatialNorm} ) );
+@#endif
 
 model;
 
@@ -123,19 +132,19 @@ model;
        GUTrend    = GYTrend ^ ( thetaC + thetaF * ( 1 - gamma ) / ( 1 + lambda ) ) / GN ^ ( thetaC + thetaF + thetaL );
        GmuNTrend  = GYTrend ^ ( (  thetaC + thetaF * ( 1 - gamma ) / ( 1 + lambda ) ) * ( 1 - varsigma ) ) / GN ^ ( ( thetaC + thetaF + thetaL ) * ( 1 - varsigma ) );
     
-    #N = ( 0
+    #N = 0
     @#for Point1 in 1 : SpatialNumPoints
         @#define Index1 = IndicesStringArray[Point1]
-        + N@{Index1}
+        + Weight@{Index1} * N@{Index1}
     @#endfor
-    ) / @{SpatialNumPoints};
+    ;
 
-    #N_LAG = ( 0
+    #N_LAG = 0
     @#for Point1 in 1 : SpatialNumPoints
         @#define Index1 = IndicesStringArray[Point1]
-        + N@{Index1}_LAG
+        + Weight@{Index1} * N@{Index1}_LAG
     @#endfor
-    ) / @{SpatialNumPoints};
+    ;
     
     @#for Point1 in 1 : SpatialNumPoints
         @#define Index1 = IndicesStringArray[Point1]
@@ -157,19 +166,19 @@ model;
             #SN@{Index1}@{Index2} = psi3 * N@{Index2}_LAG / N_LAG / ( ( muN@{Index1} - muN@{Index2} ) / ( ( 1 - varsigma ) * N@{Index1}_LAG * U@{Index1} ^ ( 1 - varsigma ) ) + psi1 / ( N@{Index1}_LAG - SN@{Index1} ) + psi2 * ( Distance@{Index1}@{Index2} * SN@{Index1} - SD@{Index1} ) / ( dBar * SN@{Index1} * SN@{Index1} - SN@{Index1} * SD@{Index1} ) );
         @#endfor
         
-        SN@{Index1} = ( 0
+        SN@{Index1} = 0
         @#for Point2 in 1 : SpatialNumPoints
             @#define Index2 = IndicesStringArray[Point2]
-            + SN@{Index1}@{Index2}
+            + Weight@{Index2} * SN@{Index1}@{Index2}
         @#endfor
-        ) / @{SpatialNumPoints};
+        ;
 
-        SD@{Index1} = ( 0
+        SD@{Index1} = 0
         @#for Point2 in 1 : SpatialNumPoints
             @#define Index2 = IndicesStringArray[Point2]
-            + Distance@{Index1}@{Index2} * SN@{Index1}@{Index2}
+            + Weight@{Index2} * Distance@{Index1}@{Index2} * SN@{Index1}@{Index2}
         @#endfor
-        ) / @{SpatialNumPoints};
+        ;
         
         U@{Index1} = ( C@{Index1} / N@{Index1}_LAG ) ^ thetaC
         * ( E@{Index1} / N@{Index1}_LAG ) ^ thetaF
@@ -181,9 +190,9 @@ model;
         * exp( psi3 * ( 0
         @#for Point2 in 1 : SpatialNumPoints
             @#define Index2 = IndicesStringArray[Point2]
-            + N@{Index2}_LAG / N_LAG * log( SN@{Index1}@{Index2} / N@{Index1}_LAG )
+            + Weight@{Index2} * N@{Index2}_LAG / N_LAG * log( SN@{Index1}@{Index2} / N@{Index1}_LAG )
         @#endfor
-        ) / @{SpatialNumPoints} );
+        ) );
         
         muN@{Index1} = beta * ( muN@{Index1}_LEAD * GN_LEAD + U@{Index1}_LEAD ^ ( 1 - varsigma ) + ( 1 - varsigma ) * U@{Index1}_LEAD ^ ( 1 - varsigma ) * (
             thetaH * ( H@{Index1}_LEAD / N@{Index1} ) ^ ( 1 + nu ) / ( 1 / ( 1 + nu ) * Gamma ^ ( 1 + nu ) - 1 / ( 1 + nu ) * ( H@{Index1}_LEAD / N@{Index1} ) ^ ( 1 + nu ) )
@@ -205,37 +214,37 @@ model;
     @#for Point1 in 2 : SpatialNumPoints
         @#define Index1 = IndicesStringArray[Point1]
 
-        N@{Index1} = GN * N@{Index1}_LAG - SN@{Index1} + ( 0
+        N@{Index1} = GN * N@{Index1}_LAG - SN@{Index1}
         @#for Point2 in 1 : SpatialNumPoints
             @#define Index2 = IndicesStringArray[Point2]
-            + SN@{Index2}@{Index1}
+            + Weight@{Index2} * SN@{Index2}@{Index1}
         @#endfor
-        ) / @{SpatialNumPoints};
+        ;
     @#endfor
     
-    1 = ( 0
+    1 = 0
     @#for Point2 in 1 : SpatialNumPoints
         @#define Index2 = IndicesStringArray[Point2]
-        + N@{Index2}
+        + Weight@{Index2} * N@{Index2}
     @#endfor
-    ) / @{SpatialNumPoints};    
+    ;    
 
     @#for Point1 in 1 : SpatialNumPoints
         @#define Index1 = IndicesStringArray[Point1]
         
-        #P@{Index1} = ( 1 + lambda ) * ( ( 0
+        #P@{Index1} = ( 1 + lambda ) * ( 0
         @#for Point2 in 1 : SpatialNumPoints
             @#define Index2 = IndicesStringArray[Point2]
-            + J@{Index2} * ( SP@{Index2} * exp( tau * Distance@{Index1}@{Index2} ) ) ^ ( - 1 / lambda )
+            + Weight@{Index2} * J@{Index2} * ( SP@{Index2} * exp( tau * Distance@{Index1}@{Index2} ) ) ^ ( - 1 / lambda )
         @#endfor
-        ) / @{SpatialNumPoints} ) ^ ( - lambda );
+        ) ^ ( - lambda );
         
-        #P@{Index1}_LEAD = ( 1 + lambda ) * ( ( 0
+        #P@{Index1}_LEAD = ( 1 + lambda ) * ( 0
         @#for Point2 in 1 : SpatialNumPoints
             @#define Index2 = IndicesStringArray[Point2]
-            + J@{Index2}_LEAD * ( SP@{Index2}_LEAD * exp( tau * Distance@{Index1}@{Index2} ) ) ^ ( - 1 / lambda )
+            + Weight@{Index2} * J@{Index2}_LEAD * ( SP@{Index2}_LEAD * exp( tau * Distance@{Index1}@{Index2} ) ) ^ ( - 1 / lambda )
         @#endfor
-        ) / @{SpatialNumPoints} ) ^ ( - lambda );
+        ) ^ ( - lambda );
         
         #Z@{Index1} = ( ( K@{Index1}_LAG ^ alpha * ( A@{Index1} * H@{Index1} ) ^ ( 1 - alpha ) ) ^ ( 1 - kappa ) * ( kappa * SP@{Index1} / P@{Index1} ) ^ kappa ) ^ ( 1 / ( 1 - kappa ) );
         #Z@{Index1}_LEAD = ( ( K@{Index1} ^ alpha * ( A@{Index1}_LEAD * H@{Index1}_LEAD ) ^ ( 1 - alpha ) ) ^ ( 1 - kappa ) * ( kappa * SP@{Index1}_LEAD / P@{Index1}_LEAD ) ^ kappa ) ^ ( 1 / ( 1 - kappa ) );
@@ -255,12 +264,12 @@ model;
     @#for Point1 in 1 : SpatialNumPoints
         @#define Index1 = IndicesStringArray[Point1]
         
-        #YBar@{Index1} = ( 0
+        #YBar@{Index1} = 0
         @#for Point2 in 1 : SpatialNumPoints
             @#define Index2 = IndicesStringArray[Point2]
-            + Y@{Index2} * P@{Index2} ^ ( ( 1 + lambda ) / lambda ) * exp( - tau / lambda * Distance@{Index1}@{Index2} )
+            + Weight@{Index2} * Y@{Index2} * P@{Index2} ^ ( ( 1 + lambda ) / lambda ) * exp( - tau / lambda * Distance@{Index1}@{Index2} )
         @#endfor
-        ) / @{SpatialNumPoints};
+        ;
         
         #Pi@{Index1} = lambda / ( 1 + lambda ) * ( 1 + lambda ) ^ ( - 1 / lambda ) * SP@{Index1} ^ ( - 1 / lambda ) * YBar@{Index1};
         
@@ -271,25 +280,29 @@ model;
     
     1 = R * Xi_LEAD;
     
-    0 = ( 0
+    0 = 0
     @#for Point1 in 1 : SpatialNumPoints
         @#define Index1 = IndicesStringArray[Point1]
-        + E@{Index1} - F@{Index1}
+        + Weight@{Index1} * ( E@{Index1} - F@{Index1} )
     @#endfor
-    ) / @{SpatialNumPoints};
+    ;
 
     @#for VariableName in AggregatedVariables
-        @{VariableName} = ( 0
+        @{VariableName} = 0
         @#for Point1 in 1 : SpatialNumPoints
             @#define Index1 = IndicesStringArray[Point1]
-            + @{VariableName}@{Index1}
+            + Weight@{Index1} * @{VariableName}@{Index1}
         @#endfor
-        ) / @{SpatialNumPoints};
+        ;
     @#endfor
     
 end;
 
-@#define LoadSteadyState = 0
+@#if SpatialShape[1] == "P"
+    @#define LoadSteadyState = 1
+@#else
+    @#define LoadSteadyState = 0
+@#endif
 
 @#if LoadSteadyState
 
@@ -345,12 +358,12 @@ end;
         A_1_ = 1;
         A_1_LEAD_ = GA_;
 
-        AverageTransportCost_ = ( ( 0
+        AverageTransportCost_ = ( 0
         @#for Point2 in 1 : SpatialNumPoints
             @#define Index2 = IndicesStringArray[Point2]
-            + exp( - tau_ / lambda * Distance@{Index1}@{Index2}_ )
+            + Weight@{Index2}_ * exp( - tau_ / lambda * Distance@{Index1}@{Index2}_ )
         @#endfor
-        ) / @{SpatialNumPoints} ) ^ ( - lambda );
+        ) ^ ( - lambda );
 
         P_1_Over_Q_1_ = ( 1 - Phi2 / 2 * ( GYTrend_ - 1 ) ^ 2 - Phi2 * ( GYTrend_ - 1 ) * GYTrend_ ) + Xi_LEAD_ * GQTrend_ * Phi2 * ( GYTrend_ - 1 ) * GYTrend_ ^ 2;
 
@@ -384,9 +397,9 @@ end;
          * exp( psi3 * ( 0
         @#for Point2 in 1 : SpatialNumPoints
             @#define Index2 = IndicesStringArray[Point2]
-            + log( SN@{Index1}@{Index2}_ / N_1_LAG_ )
+            + Weight@{Index2}_ * log( SN@{Index1}@{Index2}_ / N_1_LAG_ )
         @#endfor
-        ) / @{SpatialNumPoints} );
+        ) );
 
         U_1_LEAD_ = U_1_ * GUTrend_;
         H_1_LEAD_ = H_1_ * GN_;
