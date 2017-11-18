@@ -134,6 +134,9 @@ for ShockIdx = 1 : length( ShockNames )
             
             close( Video );
             
+            dos( '..\ffmpeg.exe -i Video.mj2 -filter "setsar=sar=1" -crf 15 -preset slow Video.mp4', '-echo' );
+            delete Video.mj2
+            
         end
         
         cd( '..' );
