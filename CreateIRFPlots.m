@@ -40,6 +40,7 @@ robot.keyRelease(java.awt.event.KeyEvent.VK_X);      %// release X
 pause( 0.1 );
 
 FigureHandle.PaperPositionMode = 'auto';
+FigureHandle.Color = [ 1 1 1 ];
 colormap( parula( 2 ^ 16 ) );
 
 for ShockIdx = 1 : length( ShockNames )
@@ -99,12 +100,16 @@ for ShockIdx = 1 : length( ShockNames )
             
             PercentIRF = [ PercentIRF( :, :, : ), PercentIRF( :, 1, : ); PercentIRF( 1, :, : ), PercentIRF( 1, 1, : ) ];
             PercentIRF = interp3( PercentIRF, InterpolationAmount );
+            minPercentIRF = min( PercentIRF(:) );
+            maxPercentIRF = max( PercentIRF(:) );
 
             for Period = 1 : size( PercentIRF, 3 )
                 CurrentSurface = PercentIRF( :, :, Period );
                 pcolor( SurfaceX, SurfaceY, CurrentSurface );
                 shading interp;
                 axis square;
+                caxis( [ minPercentIRF, maxPercentIRF ] );
+                colorbar;
                 drawnow;
                 
                 if ( mod( Period - 1, 4 * InterpolationMultiplier ) == 0 ) || ( Period == size( PercentIRF, 3 ) )
@@ -115,9 +120,8 @@ for ShockIdx = 1 : length( ShockNames )
                 
                 Axis = gca;
                 Axis.Units = 'pixels';
-                AxisPosition = Axis.Position;
-                Margin = max( ceil( Axis.TightInset ) );
-                Rectangle = [ -Margin, -Margin, AxisPosition(3) + 2 * Margin, AxisPosition(4) + 2 * Margin ];
+                AxisPosition = ceil( Axis.Position );
+                Rectangle = [ ( 1240 - AxisPosition(3) ) / 2, ( 934 - AxisPosition(4) ) / 2, 1240, 934 ];
                 Frame = getframe( Axis, Rectangle );
                 
                 % Frame = getframe( FigureHandle );
