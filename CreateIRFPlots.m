@@ -1,9 +1,12 @@
 ShockNames = { 'epsilon_AT_5_5', 'epsilon_GA' 'epsilon_GN' 'epsilon_tau' 'epsilon_phi' 'epsilon_beta' };
 VariableNames = { 'C', 'K', 'I', 'E', 'F', 'Q', 'J', 'L', 'H', 'N', 'SN', 'SD', 'muN', 'U' };
 SpecificIndices = [ 1, 1; 4, 4 ];
+SpatialShockIndices = 1;
 
 IRFLength = 400;
 ShockScale = 10;
+
+InterpolationAmount = 3;
 
 SpatialDimensions = 2;
 SpatialPointsPerDimension = 8;
@@ -21,7 +24,8 @@ XIRF = ( 1:400 ) / 4;
 ZeroIRF = zeros( IRFLength, 1 );
 
 if SpatialDimensions == 2
-    [ SurfaceX, SurfaceY ] = meshgrid( ( 0:SpatialPointsPerDimension ) / SpatialPointsPerDimension );
+    InterpolationMultiplier = 2 ^ InterpolationAmount;
+    [ SurfaceX, SurfaceY ] = meshgrid( ( 0 : ( SpatialPointsPerDimension * InterpolationMultiplier ) ) / ( SpatialPointsPerDimension * InterpolationMultiplier ) );
 end
 
 FigureHandle = figure( 1 );
@@ -34,7 +38,9 @@ robot.keyRelease(java.awt.event.KeyEvent.VK_ALT);    %// release ALT
 robot.keyPress(java.awt.event.KeyEvent.VK_X);        %// send X
 robot.keyRelease(java.awt.event.KeyEvent.VK_X);      %// release X
 pause( 0.1 );
+
 FigureHandle.PaperPositionMode = 'auto';
+colormap( parula( 2 ^ 16 ) );
 
 for ShockIdx = 1 : length( ShockNames )
     ShockName = ShockNames{ ShockIdx };
@@ -80,34 +86,39 @@ for ShockIdx = 1 : length( ShockNames )
             saveas( FigureHandle, CurrentIndicesString, 'meta' );
         end
         
-        if SpatialDimensions == 2
+        if ( SpatialDimensions == 2 ) && ismember( ShockIdx, SpatialShockIndices )
             
             Video = VideoWriter( 'Video', 'MPEG-4' ); %#ok<TNMLP>
-            Video.FrameRate = 4;
+            Video.FrameRate = 4 * InterpolationMultiplier;
             Video.Quality = 90;
             open( Video );
 
             [ mkdirStatus, ~, ~ ] = mkdir( 'Frames' );
             assert( mkdirStatus == 1 );
             cd( 'Frames' );
+            
+            PercentIRF = [ PercentIRF( :, :, : ), PercentIRF( :, 1, : ); PercentIRF( 1, :, : ), PercentIRF( 1, 1, : ) ];
+            PercentIRF = interp3( PercentIRF, InterpolationAmount );
 
-            for Period = 1 : IRFLength
-                CurrentSurface = [ PercentIRF( :, :, Period ), PercentIRF( :, 1, Period ); PercentIRF( 1, :, Period ), PercentIRF( 1, 1, Period ) ];
+            for Period = 1 : size( PercentIRF, 3 )
+                CurrentSurface = PercentIRF( :, :, Period );
                 pcolor( SurfaceX, SurfaceY, CurrentSurface );
                 shading interp;
+                axis square;
                 drawnow;
                 FileName = num2str( Period );
                 savefig( FigureHandle, FileName, 'compact' );
                 saveas( FigureHandle, FileName, 'meta' );
                 
-                % Axis = gca;
-                % Axis.Units = 'pixels';
-                % A xisPosition = Axis.Position;
-                % AxisTightInset = Axis.TightInset;
-                % Rectangle = [ -AxisTightInset(1), -AxisTightInset(2), AxisPosition(3)+AxisTightInset(1)+AxisTightInset(3), AxisPosition(4)+AxisTightInset(2)+AxisTightInset(4) ];
-                % Frame = getframe( Axis, Rectangle );
+                Axis = gca;
+                Axis.Units = 'pixels';
+                AxisPosition = Axis.Position;
+                AxisTightInset = Axis.TightInset;
+                Rectangle = [ -AxisTightInset(1), -AxisTightInset(2), AxisPosition(3)+AxisTightInset(1)+AxisTightInset(3), AxisPosition(4)+AxisTightInset(2)+AxisTightInset(4) ];
+                Frame = getframe( Axis, Rectangle );
                 
-                Frame = getframe( FigureHandle );
+                % Frame = getframe( FigureHandle );
+                
                 writeVideo( Video, Frame );
             end
             
