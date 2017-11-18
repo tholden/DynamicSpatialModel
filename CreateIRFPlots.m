@@ -89,9 +89,9 @@ for ShockIdx = 1 : length( ShockNames )
         
         if ( SpatialDimensions == 2 ) && ismember( ShockIdx, SpatialShockIndices )
             
-            Video = VideoWriter( 'Video', 'MPEG-4' ); %#ok<TNMLP>
+            Video = VideoWriter( 'Video', 'Archival' ); %#ok<TNMLP>
             Video.FrameRate = 4 * InterpolationMultiplier;
-            Video.Quality = 100;
+            % Video.Quality = 100;
             open( Video );
 
             [ mkdirStatus, ~, ~ ] = mkdir( 'Frames' );
@@ -118,13 +118,14 @@ for ShockIdx = 1 : length( ShockNames )
                     saveas( FigureHandle, FileName, 'png' );
                 end
                 
-                Axis = gca;
-                Axis.Units = 'pixels';
-                AxisPosition = ceil( Axis.Position );
-                Rectangle = [ ( 1240 - AxisPosition(3) ) / 2, ( 934 - AxisPosition(4) ) / 2, 1240, 934 ];
-                Frame = getframe( Axis, Rectangle );
+                % Axis = gca;
+                % Axis.Units = 'pixels';
+                % AxisPosition = ceil( Axis.Position );
+                % Margin = max( ceil( Axis.TightInset ) );
+                % Rectangle = [ -Margin, -Margin, AxisPosition(3) + 2 * Margin, AxisPosition(4) + 2 * Margin ];
+                % Frame = getframe( Axis, Rectangle );
                 
-                % Frame = getframe( FigureHandle );
+                Frame = getframe( FigureHandle );
                 
                 writeVideo( Video, Frame );
             end
