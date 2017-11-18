@@ -1,6 +1,6 @@
 ShockNames = { 'epsilon_AT_5_5', 'epsilon_GA' 'epsilon_GN' 'epsilon_tau' 'epsilon_phi' 'epsilon_beta' };
 VariableNames = { 'C', 'K', 'I', 'E', 'F', 'Q', 'J', 'L', 'H', 'N', 'SN', 'SD', 'muN', 'U' };
-SpecificIndices = [ 1, 1; 4, 4 ];
+SpecificIndices = [ 1, 1; 5, 5 ];
 SpatialShockIndices = 1;
 
 IRFLength = 400;
