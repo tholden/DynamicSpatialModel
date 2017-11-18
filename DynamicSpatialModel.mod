@@ -51,6 +51,19 @@
     @#define EndoVariables = EndoVariables + [ "U" + Index1, "0", "Inf", "GUTrend" ]
 @#endfor
 
+@#define EndoVariables = EndoVariables + [ "C", "0", "Inf", "GYTrend" ]
+@#define EndoVariables = EndoVariables + [ "K", "0", "Inf", "GYTrend" ]
+@#define EndoVariables = EndoVariables + [ "I", "0", "Inf", "GYTrend" ]
+@#define EndoVariables = EndoVariables + [ "F", "0", "Inf", "GFTrend" ]
+@#define EndoVariables = EndoVariables + [ "J", "0", "Inf", "GZTrend" ]
+@#define EndoVariables = EndoVariables + [ "L", "0", "Inf", "1" ]
+@#define EndoVariables = EndoVariables + [ "H", "0", "Inf", "GN" ]
+@#define EndoVariables = EndoVariables + [ "SN", "0", "Inf", "GN" ]
+@#define EndoVariables = EndoVariables + [ "SD", "0", "Inf", "GN" ]
+@#define EndoVariables = EndoVariables + [ "U", "0", "Inf", "GUTrend" ]
+
+@#define AggregatedVariables = [ "C", "K", "I", "F", "J", "L", "H", "SN", "SD", "U" ]
+
 @#include "ClassifyDeclare.mod"
 
 parameters alpha gamma kappa nu varsigma zeta lambda deltaJ deltaK Phi2 thetaC thetaF thetaL thetaH thetaN psi1 psi2 psi3 Gamma Omega dBar;
@@ -92,6 +105,7 @@ Omega = 3; // pop/km^2 for the contiguous US is 41.5. for wyoming it is 2.33 for
 dBar = sqrt( @{SpatialDimensions} * ( 0.5 ^ 2 ) );
 
 model;
+
     @#include "InsertNewModelEquations.mod"
     
        GYTrend    = ( GA * GN ) ^ ( ( 1 - alpha ) * ( 1 - kappa ) * ( 1 + lambda ) / ( ( 1 - alpha ) * ( 1 - kappa ) * ( 1 + lambda ) - lambda ) );
@@ -263,6 +277,15 @@ model;
         + E@{Index1} - F@{Index1}
     @#endfor
     ) / @{SpatialNumPoints};
+
+    @#for VariableName in AggregatedVariables
+        @{VariableName} = ( 0
+        @#for Point1 in 1 : SpatialNumPoints
+            @#define Index1 = IndicesStringArray[Point1]
+            + @{VariableName}@{Index1}
+        @#endfor
+        ) / @{SpatialNumPoints};
+    @#endfor
     
 end;
 
@@ -369,6 +392,10 @@ end;
         H_1_LEAD_ = H_1_ * GN_;
         muN_1_ = beta_ * ( U_1_LEAD_ ^ ( 1 - varsigma ) + ( 1 - varsigma ) * U_1_LEAD_ ^ ( 1 - varsigma ) * ( thetaH * ( H_1_LEAD_ / N_1_ ) ^ ( 1 + nu ) / ( 1 / ( 1 + nu ) * Gamma ^ ( 1 + nu ) - 1 / ( 1 + nu ) * ( H_1_LEAD_ / N_1_ ) ^ ( 1 + nu ) ) + psi1 * SN_1_ * GN_ / ( N_1_ - SN_1_ * GN_ ) - ( thetaC + thetaF + thetaL + psi3 ) ) ) / ( 1 - beta_ * GmuNTrend_ * GN_ );
         
+        @#for VariableName in AggregatedVariables
+            @{VariableName}_ = @{VariableName}_1_;
+        @#endfor
+
         @#for Point1 in 1 : SpatialNumPoints
             @#define Index1 = IndicesStringArray[Point1]
             C@{Index1}_ = C_1_;
@@ -423,5 +450,5 @@ check;
 @#if Deterministic
     simul( periods = 10000, maxit = 1000000, tolf = 1e-8, tolx = 1e-8, stack_solve_algo = 7, solve_algo = 0 ); // endogenous_terminal_period
 @#else
-    stoch_simul( order = 1, irf = 400, periods = 0, nocorr, nofunctions, nodisplay, nograph ); // k_order_solver
+    stoch_simul( order = 1, irf = 400, periods = 0, nocorr, nofunctions, nodisplay, nograph, irf_shocks = ( epsilon_AT_4_4, epsilon_GA, epsilon_GN, epsilon_tau, epsilon_phi, epsilon_beta ) ); // k_order_solver
 @#endif
