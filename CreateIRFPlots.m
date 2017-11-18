@@ -90,7 +90,7 @@ for ShockIdx = 1 : length( ShockNames )
             
             Video = VideoWriter( 'Video', 'MPEG-4' ); %#ok<TNMLP>
             Video.FrameRate = 4 * InterpolationMultiplier;
-            Video.Quality = 90;
+            Video.Quality = 100;
             open( Video );
 
             [ mkdirStatus, ~, ~ ] = mkdir( 'Frames' );
@@ -106,15 +106,18 @@ for ShockIdx = 1 : length( ShockNames )
                 shading interp;
                 axis square;
                 drawnow;
-                FileName = num2str( Period );
-                savefig( FigureHandle, FileName, 'compact' );
-                saveas( FigureHandle, FileName, 'meta' );
+                
+                if ( mod( Period - 1, 4 * InterpolationMultiplier ) == 0 ) || ( Period == size( PercentIRF, 3 ) )
+                    FileName = num2str( Period );
+                    savefig( FigureHandle, FileName, 'compact' );
+                    saveas( FigureHandle, FileName, 'png' );
+                end
                 
                 Axis = gca;
                 Axis.Units = 'pixels';
                 AxisPosition = Axis.Position;
-                AxisTightInset = Axis.TightInset;
-                Rectangle = [ -AxisTightInset(1), -AxisTightInset(2), AxisPosition(3)+AxisTightInset(1)+AxisTightInset(3), AxisPosition(4)+AxisTightInset(2)+AxisTightInset(4) ];
+                Margin = max( ceil( Axis.TightInset ) );
+                Rectangle = [ -Margin, -Margin, AxisPosition(3) + 2 * Margin, AxisPosition(4) + 2 * Margin ];
                 Frame = getframe( Axis, Rectangle );
                 
                 % Frame = getframe( FigureHandle );
