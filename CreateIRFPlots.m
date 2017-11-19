@@ -55,7 +55,7 @@ for ShockIdx = 1 : length( ShockNames )
 
         AggregatedVariableName = [ 'log_' VariableName '_' ShockName ];
         if isfield( oo_.irfs, AggregatedVariableName )
-            CurrentPercentIRF = 100 * ShockScale * oo_.irfs.( AggregatedVariableName );
+            CurrentPercentIRF = 100 * ShockScale * oo_.irfs.( AggregatedVariableName )( 1:IRFLength );
             plot( XIRF, CurrentPercentIRF, 'k-' );
             hold on;
             plot( XIRF, ZeroIRF, 'r--' );
