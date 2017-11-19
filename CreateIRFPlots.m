@@ -20,7 +20,7 @@ SpatialIndices = cell2mat( SpatialIndices );
 
 GridSizeCell = repmat( { SpatialPointsPerDimension }, 1, SpatialDimensions );
 
-XIRF = ( 1:400 ) / 4;
+XIRF = ( 1:IRFLength ) / 4;
 ZeroIRF = zeros( IRFLength, 1 );
 
 if SpatialDimensions == 2
