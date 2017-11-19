@@ -13,4 +13,4 @@ checksum
 
 DynamicSpatialModel.m
 
-Results/
+*.fig
