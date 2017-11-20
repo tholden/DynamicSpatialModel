@@ -5,6 +5,7 @@ function CombineIRFPlots
     addpath( cd );
 
     VariableNames = { 'C', 'K', 'I', 'E', 'F', 'Q', 'J', 'L', 'H', 'N', 'SN', 'SD', 'muN', 'U' };
+    AggregateVariableNames = { 'C', 'K', 'I', 'F', 'F', '0', 'J', 'L', 'H', '0', '0', 'SD', '0', 'U' };
     VariableLabels = { 'C_{x,t}', 'K_{x,t}', 'I_{x,t}', 'E_{x,t}', 'F_{x,t}', 'Q_{x,t}', 'J_{x,t}', 'L_{x,t}', 'H_{x,t}', 'N_{x,t}', '\mathcal{N}_{x,t}', '\mathcal{D}_{x,t}', '\mu_{N,x,t}', 'U_{x,t}' };
 
     K = length( VariableNames );
@@ -19,13 +20,17 @@ function CombineIRFPlots
     robot.keyPress(java.awt.event.KeyEvent.VK_X);        %// send X
     robot.keyRelease(java.awt.event.KeyEvent.VK_X);      %// release X
     pause( 0.1 );
+    
+    NewFigure.PaperPositionMode = 'auto';
+    NewFigure.Color = [ 1 1 1 ];
+    colormap( parula( 2 ^ 16 ) );
 
-    for VariableIdx = 1 : length( VariableNames )
+    for VariableIdx = 1 : K
         VariableName = VariableNames{ VariableIdx };
+        AggregateVariableName = AggregateVariableNames{ VariableIdx };
         VariableLabel = VariableLabels{ VariableIdx };
         
-        FolderName = [ VariableName '_epsilon_AT_5_5' ];
-        cd( FolderName );
+        cd( [ VariableName '_epsilon_AT_5_5' ] );
         
         cd( 'Frames' );
         ProcessFigure( '1.fig', NewFigure, K, VariableIdx, 1, VariableLabel );
@@ -35,11 +40,16 @@ function CombineIRFPlots
         cd( '..' );
         ProcessFigure( '_5_5.fig', NewFigure, K, VariableIdx, 5, VariableLabel );
         ProcessFigure( '_1_1.fig', NewFigure, K, VariableIdx, 6, VariableLabel );
-        ProcessFigure( 'Aggregate.fig', NewFigure, K, VariableIdx, 7, VariableLabel );
+        
+        if ~strcmp( AggregateVariableName, '0' )
+            cd( '..' );
+            cd( [ AggregateVariableName '_epsilon_AT_5_5' ] );
+            ProcessFigure( 'Aggregate.fig', NewFigure, K, VariableIdx, 7, VariableLabel );
+        end
         
         cd( '..' );
     end
-
+    
 end
 
 function ProcessFigure( FileName, NewFigure, NumVariables, VariableIdx, Column, VariableLabel )
@@ -52,6 +62,9 @@ function ProcessFigure( FileName, NewFigure, NumVariables, VariableIdx, Column, 
     for i = 1 : numel( Children )
         copyobj( Children( i ), NewAxes );
         hold on;
+    end
+    if Column <= 4
+        caxis( NewAxes, caxis( OldAxes ) );
     end
     if VariableIdx < NumVariables
         NewAxes.XTickLabel = [];
