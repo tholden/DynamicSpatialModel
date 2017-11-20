@@ -45,6 +45,11 @@ FigureHandle.PaperPositionMode = 'auto';
 FigureHandle.Color = [ 1 1 1 ];
 colormap( parula( 2 ^ 16 ) );
 
+FolderName = 'Results';
+[ mkdirStatus, ~, ~ ] = mkdir( FolderName );
+assert( mkdirStatus == 1 );
+cd( FolderName );
+
 for ShockIdx = 1 : length( ShockNames )
     ShockName = ShockNames{ ShockIdx };
     for VariableIdx = 1 : length( VariableNames )
@@ -144,3 +149,5 @@ for ShockIdx = 1 : length( ShockNames )
         cd( '..' );
     end
 end
+
+cd( '..' );

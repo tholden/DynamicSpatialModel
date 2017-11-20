@@ -44,6 +44,11 @@ colormap( parula( 2 ^ 16 ) );
 EndoNames = cellstr( M_.endo_names );
 PercentSimulations = 100 * bsxfun( @minus, oo_.endo_simul( :, 1:SimulationLength ), oo_.steady_state );
 
+FolderName = 'Results';
+[ mkdirStatus, ~, ~ ] = mkdir( FolderName );
+assert( mkdirStatus == 1 );
+cd( FolderName );
+
 for VariableIdx = 1 : length( VariableNames )
     VariableName = VariableNames{ VariableIdx };
 
@@ -128,3 +133,4 @@ for VariableIdx = 1 : length( VariableNames )
     cd( '..' );
 end
 
+cd( '..' );
