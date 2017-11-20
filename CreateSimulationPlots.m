@@ -1,3 +1,5 @@
+disp( 'This code requires ffmpeg.exe from http://ffmpeg.zeranoe.com/builds/ to be placed in the same folder.' );
+
 VariableNames = { 'C', 'K', 'I', 'E', 'F', 'Q', 'J', 'L', 'H', 'N', 'SN', 'SD', 'muN', 'U' };
 
 SimulationLength = 4000;

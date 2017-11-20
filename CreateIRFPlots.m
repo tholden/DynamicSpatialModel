@@ -1,3 +1,5 @@
+disp( 'This code requires ffmpeg.exe from http://ffmpeg.zeranoe.com/builds/ to be placed in the same folder.' );
+
 ShockNames = { 'epsilon_AT_5_5', 'epsilon_GA' 'epsilon_GN' 'epsilon_tau' 'epsilon_phi' 'epsilon_beta' };
 VariableNames = { 'C', 'K', 'I', 'E', 'F', 'Q', 'J', 'L', 'H', 'N', 'SN', 'SD', 'muN', 'U' };
 SpecificIndices = [ 1, 1; 5, 5 ];
