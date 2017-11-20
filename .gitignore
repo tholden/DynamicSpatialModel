@@ -9,9 +9,10 @@
 *_static.m
 *_steadystate2.m
 
+*.fig
+*-trim.png
+
 checksum
 
 DynamicSpatialModel.m
-
-*.fig
-*-trim.png
+Results/subtightplot.m
