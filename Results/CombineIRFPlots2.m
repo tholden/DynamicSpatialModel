@@ -61,7 +61,7 @@ function ProcessFigure( FileName, NewFigure, NumVariables, VariableIdx, Column, 
     end
     if VariableIdx == 1
         Titles = { 'G_A', 'G_N', '\tau', '\phi', '\beta' };
-        title( NewAxes, [ '{\boldmath\fontsize{18}{24}\selectfont{$$\epsilon_{{' Titles{ Column } '},t}$$}}' ], 'Interpreter', 'latex' );
+        title( NewAxes, [ '{\boldmath\fontsize{18}{24}\selectfont{$$\varepsilon_{{' Titles{ Column } '},t}$$}}' ], 'Interpreter', 'latex' );
     end
     close( OldFigure );
 end
