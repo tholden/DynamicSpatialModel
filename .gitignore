@@ -8,6 +8,8 @@
 *_set_auxiliary_variables.m
 *_static.m
 *_steadystate2.m
+*.c
+*.mex*
 
 *.fig
 *-trim.png
