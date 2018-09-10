@@ -1,0 +1,166 @@
+N_ = 0
+@#for Point1 in 1 : SpatialNumPoints
+	@#define Index1 = IndicesStringArray[Point1]
+	+ Weight@{Index1} * N@{Index1}
+@#endfor
+;
+
+Objective = 0
+@#for Point1 in 1 : SpatialNumPoints
+	@#define Index1 = IndicesStringArray[Point1]
+	@#for Point2 in 1 : SpatialNumPoints
+		@#define Index2 = IndicesStringArray[Point2]
+		+ ( Distance@{CentreIndex}@{Point2} > Distance@{CentreIndex}@{Point1} ) * ( max( 0, N_@{Point1} - N_@{Point2} ) )
+	@#endfor
+@#endfor
+;
+
+@#for Point1 in 1 : SpatialNumPoints
+	@#define Index1 = IndicesStringArray[Point1]
+	
+	#A@{Index1} = AP * AT@{Index1};
+	#A@{Index1}_LEAD = AP_LEAD * AT@{Index1}_LEAD;
+	
+	#ZF@{Index1} = ( F@{Index1} / L@{Index1} ^ gamma ) ^ ( 1 / ( 1 - gamma ) );
+	#SRL@{Index1} = gamma * F@{Index1} / L@{Index1};
+	#SP@{Index1} = ( 1 - gamma ) * F@{Index1} / ZF@{Index1};
+
+	#ZF@{Index1}_LEAD = ( F@{Index1}_LEAD / L@{Index1}_LEAD ^ gamma ) ^ ( 1 / ( 1 - gamma ) );
+	#SP@{Index1}_LEAD = ( 1 - gamma ) * F@{Index1}_LEAD / ZF@{Index1}_LEAD;
+	
+	K@{Index1} = ( 1 - deltaK ) * K@{Index1}_LAG + ( 1 - Phi2 / 2 * ( I@{Index1} / I@{Index1}_LAG - 1 ) ^ 2 ) * I@{Index1};
+	
+	@#for Point2 in 1 : SpatialNumPoints
+		@#define Index2 = IndicesStringArray[Point2]
+		#SN@{Index1}@{Index2} = psi3 * N@{Index2}_LAG / N_ / ( ( muN@{Index1} - muN@{Index2} ) / ( ( 1 - varsigma ) * N@{Index1}_LAG * U@{Index1} ^ ( 1 - varsigma ) ) + psi1 / ( N@{Index1}_LAG - SN@{Index1} ) + psi2 * ( Distance@{Index1}@{Index2} * SN@{Index1} - SD@{Index1} ) / ( dBar * SN@{Index1} * SN@{Index1} - SN@{Index1} * SD@{Index1} ) );
+	@#endfor
+	
+	SN@{Index1} = 0
+	@#for Point2 in 1 : SpatialNumPoints
+		@#define Index2 = IndicesStringArray[Point2]
+		+ Weight@{Index2} * SN@{Index1}@{Index2}
+	@#endfor
+	;
+
+	SD@{Index1} = 0
+	@#for Point2 in 1 : SpatialNumPoints
+		@#define Index2 = IndicesStringArray[Point2]
+		+ Weight@{Index2} * Distance@{Index1}@{Index2} * SN@{Index1}@{Index2}
+	@#endfor
+	;
+	
+	U@{Index1} = ( C@{Index1} / N@{Index1}_LAG ) ^ thetaC
+	* ( E@{Index1} / N@{Index1}_LAG ) ^ thetaF
+	* ( ( 1 - L@{Index1} ) / N@{Index1}_LAG ) ^ thetaL
+	* ( 1 / ( 1 + nu ) * Gamma ^ ( 1 + nu ) - 1 / ( 1 + nu ) * ( H@{Index1} / N@{Index1}_LAG ) ^ ( 1 + nu ) ) ^ thetaH
+	* ( 1 / 2 * Omega ^ 2 - 1 / 2 * log( N@{Index1}_LAG / N_ ) ^ 2 ) ^ thetaN
+	* ( 1 - SN@{Index1} / N@{Index1}_LAG ) ^ psi1
+	* ( dBar - SD@{Index1} / SN@{Index1} ) ^ psi2
+	* exp( psi3 * ( 0
+	@#for Point2 in 1 : SpatialNumPoints
+		@#define Index2 = IndicesStringArray[Point2]
+		+ Weight@{Index2} * N@{Index2}_LAG / N_ * log( SN@{Index1}@{Index2} / N@{Index1}_LAG )
+	@#endfor
+	) );
+	
+	muN@{Index1} = beta * ( muN@{Index1}_LEAD * GN_LEAD + U@{Index1}_LEAD ^ ( 1 - varsigma ) + ( 1 - varsigma ) * U@{Index1}_LEAD ^ ( 1 - varsigma ) * (
+		thetaH * ( H@{Index1}_LEAD / N@{Index1} ) ^ ( 1 + nu ) / ( 1 / ( 1 + nu ) * Gamma ^ ( 1 + nu ) - 1 / ( 1 + nu ) * ( H@{Index1}_LEAD / N@{Index1} ) ^ ( 1 + nu ) )
+		- thetaN * log( N@{Index1} / N_ ) / ( 1 / 2 * Omega ^ 2 - 1 / 2 * log( N@{Index1} / N_ ) ^ 2 )
+		+ psi1 * SN@{Index1}_LEAD / ( N@{Index1} - SN@{Index1}_LEAD )
+		- ( thetaC + thetaF + thetaL + psi3 )
+	) );
+@#endfor
+
+@#define Index1 = IndicesStringArray[1]
+#Xi_LEAD = beta * ( N@{Index1} / N@{Index1}_LAG ) * ( E@{Index1} / E@{Index1}_LEAD ) * ( U@{Index1}_LEAD / U@{Index1} ) ^ ( 1 - varsigma );
+
+@#for Point2 in 2 : SpatialNumPoints
+	@#define Index2 = IndicesStringArray[Point2]
+
+	E@{Index1} / N@{Index1}_LAG / U@{Index1} ^ ( 1 - varsigma ) = E@{Index2} / N@{Index2}_LAG / U@{Index2} ^ ( 1 - varsigma );
+@#endfor
+
+@#for Point1 in 2 : SpatialNumPoints
+	@#define Index1 = IndicesStringArray[Point1]
+
+	N@{Index1} = GN * N@{Index1}_LAG - SN@{Index1}
+	@#for Point2 in 1 : SpatialNumPoints
+		@#define Index2 = IndicesStringArray[Point2]
+		+ Weight@{Index2} * SN@{Index2}@{Index1}
+	@#endfor
+	;
+@#endfor
+
+1 = 0
+@#for Point2 in 1 : SpatialNumPoints
+	@#define Index2 = IndicesStringArray[Point2]
+	+ Weight@{Index2} * N@{Index2}
+@#endfor
+;    
+
+@#for Point1 in 1 : SpatialNumPoints
+	@#define Index1 = IndicesStringArray[Point1]
+	
+	#P@{Index1} = ( 1 + lambda ) * ( 0
+	@#for Point2 in 1 : SpatialNumPoints
+		@#define Index2 = IndicesStringArray[Point2]
+		+ Weight@{Index2} * J@{Index2} * ( SP@{Index2} * exp( tau * Distance@{Index1}@{Index2} ) ) ^ ( - 1 / lambda )
+	@#endfor
+	) ^ ( - lambda );
+	
+	#P@{Index1}_LEAD = ( 1 + lambda ) * ( 0
+	@#for Point2 in 1 : SpatialNumPoints
+		@#define Index2 = IndicesStringArray[Point2]
+		+ Weight@{Index2} * J@{Index2}_LEAD * ( SP@{Index2}_LEAD * exp( tau * Distance@{Index1}@{Index2} ) ) ^ ( - 1 / lambda )
+	@#endfor
+	) ^ ( - lambda );
+	
+	#Z@{Index1} = ( ( K@{Index1}_LAG ^ alpha * ( A@{Index1} * H@{Index1} ) ^ ( 1 - alpha ) ) ^ ( 1 - kappa ) * ( kappa * SP@{Index1} / P@{Index1} ) ^ kappa ) ^ ( 1 / ( 1 - kappa ) );
+	#Z@{Index1}_LEAD = ( ( K@{Index1} ^ alpha * ( A@{Index1}_LEAD * H@{Index1}_LEAD ) ^ ( 1 - alpha ) ) ^ ( 1 - kappa ) * ( kappa * SP@{Index1}_LEAD / P@{Index1}_LEAD ) ^ kappa ) ^ ( 1 / ( 1 - kappa ) );
+	#M@{Index1} = kappa * SP@{Index1} * Z@{Index1} / P@{Index1};
+	#SRK@{Index1} = ( 1 - kappa ) * alpha * SP@{Index1} * Z@{Index1} / K@{Index1}_LAG;
+	#SRK@{Index1}_LEAD = ( 1 - kappa ) * alpha * SP@{Index1}_LEAD * Z@{Index1}_LEAD / K@{Index1};
+	#W@{Index1} = ( 1 - kappa ) * ( 1 - alpha ) * SP@{Index1} * Z@{Index1} / H@{Index1};
+	
+	1 = Xi_LEAD * ( SRK@{Index1}_LEAD + Q@{Index1}_LEAD * ( 1 - deltaK ) ) / Q@{Index1};
+	P@{Index1} = Q@{Index1} * ( 1 - Phi2 / 2 * ( I@{Index1} / I@{Index1}_LAG - 1 ) ^ 2 - Phi2 * ( I@{Index1} / I@{Index1}_LAG - 1 ) * I@{Index1} / I@{Index1}_LAG ) + Xi_LEAD * Q@{Index1}_LEAD * Phi2 * ( I@{Index1}_LEAD / I@{Index1} - 1 ) * ( I@{Index1}_LEAD / I@{Index1} ) ^ 2;
+	#Y@{Index1} = C@{Index1} + I@{Index1} + M@{Index1};
+	thetaC * E@{Index1} = thetaF * P@{Index1} * C@{Index1};
+	thetaL * E@{Index1} = thetaF * SRL@{Index1} * ( 1 - L@{Index1} );
+	thetaH * ( H@{Index1} / N@{Index1}_LAG ) ^ nu = thetaF * N@{Index1} / E@{Index1} * W@{Index1} * ( 1 / ( 1 + nu ) * Gamma ^ ( 1 + nu ) - 1 / ( 1 + nu ) * ( H@{Index1} / N@{Index1}_LAG ) ^ ( 1 + nu ) );
+@#endfor
+
+@#for Point1 in 1 : SpatialNumPoints
+	@#define Index1 = IndicesStringArray[Point1]
+	
+	#YBar@{Index1} = 0
+	@#for Point2 in 1 : SpatialNumPoints
+		@#define Index2 = IndicesStringArray[Point2]
+		+ Weight@{Index2} * Y@{Index2} * P@{Index2} ^ ( ( 1 + lambda ) / lambda ) * exp( - tau / lambda * Distance@{Index1}@{Index2} )
+	@#endfor
+	;
+	
+	#Pi@{Index1} = lambda / ( 1 + lambda ) * ( 1 + lambda ) ^ ( - 1 / lambda ) * SP@{Index1} ^ ( - 1 / lambda ) * YBar@{Index1};
+	
+	phi * SP@{Index1} = Pi@{Index1} + ( 1 - deltaJ ) * Xi_LEAD * phi_LEAD * SP@{Index1}_LEAD;
+	
+	Z@{Index1} = ZF@{Index1} + phi * ( J@{Index1} - ( 1 - deltaJ ) * J@{Index1}_LAG ) + J@{Index1} * ( ( 1 + lambda ) * SP@{Index1} ) ^ ( - ( 1 + lambda ) / lambda ) *  YBar@{Index1};
+@#endfor
+
+1 = R * Xi_LEAD;
+
+0 = 0
+@#for Point1 in 1 : SpatialNumPoints
+	@#define Index1 = IndicesStringArray[Point1]
+	+ Weight@{Index1} * ( E@{Index1} - F@{Index1} )
+@#endfor
+;
+
+@#for VariableName in AggregatedVariables
+	@{VariableName} = 0
+	@#for Point1 in 1 : SpatialNumPoints
+		@#define Index1 = IndicesStringArray[Point1]
+		+ Weight@{Index1} * @{VariableName}@{Index1}
+	@#endfor
+	;
+@#endfor
