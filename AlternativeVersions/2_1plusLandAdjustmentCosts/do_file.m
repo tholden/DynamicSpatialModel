@@ -1,17 +1,23 @@
-clear; close all;
-dbstop if error
+clear; %close all;
+%dbstop if error
 
 run_indet = 0;
 run_single = 1;
 
+
 %% Solve model
 if logical(run_single)
-param_thetaN = 10;
-param_PhiL = 2;
+param_thetaN = 10; %10
+param_Phi2 = 4; %4
+param_PhiL = 2; %2
+param_Omega = 3; %3
+param_zeta = 8; %8
+param_lambda = 0.1; %0.1
 save('param_vals.mat')
 
 dynare DynamicSpatialModel
-save('../Results/model_2.mat')
+save(['../Results/model_2_thetaN',num2str(param_thetaN),'_PhiL',num2str(param_PhiL),'_Phi2',num2str(param_Phi2),'_Omega',num2str(param_Omega),'_zeta',num2str(param_zeta),'_lambda',num2str(param_lambda),'.mat'])
+
 
 delete('param_vals.mat')
 end
