@@ -14,9 +14,9 @@
 @#endif
 
 @#if SpatialShape[1] == "P"
-    @#define SpatialShockProcesses = SpatialShockProcesses + [ "AT", "0", "Inf", "1", "0.9", "0.001", "exp(-zeta*@)#" ]
+    @#define SpatialShockProcesses = SpatialShockProcesses + [ "AT", "0", "Inf", "1", "1", "0.001", "exp(-zeta*@)#" ]
 @#else
-    @#define SpatialShockProcesses = SpatialShockProcesses + [ "AT", "0", "Inf", "1", "0.9", "0.001", "(exp(-zeta*@+zeta*dBar)+exp(zeta*@-zeta*dBar))/(exp(zeta*dBar)+exp(-zeta*dBar))#" ]
+    @#define SpatialShockProcesses = SpatialShockProcesses + [ "AT", "0", "Inf", "1", "1", "0.001", "(exp(-zeta*@+zeta*dBar)+exp(zeta*@-zeta*dBar))/(exp(zeta*dBar)+exp(-zeta*dBar))#" ]
 @#endif
 
 @#define ShockProcesses = ShockProcesses + [ "GA", "0", "Inf", "1.005", "0.8", "0.001" ]
@@ -301,7 +301,7 @@ end;
 @#if SpatialShape[1] == "P"
     @#define LoadSteadyState = 1
 @#else
-    @#define LoadSteadyState = 0
+    @#define LoadSteadyState = 1
 @#endif
 
 @#if LoadSteadyState
@@ -463,5 +463,5 @@ check;
 @#if Deterministic
     simul( periods = 10000, maxit = 1000000, tolf = 1e-8, tolx = 1e-8, stack_solve_algo = 7, solve_algo = 0 ); // endogenous_terminal_period
 @#else
-    stoch_simul( order = 1, irf = 400, periods = 0, nocorr, nofunctions, nodisplay, nograph, irf_shocks = ( epsilon_AT_5_5, epsilon_GA, epsilon_GN, epsilon_tau, epsilon_phi, epsilon_beta ) ); // k_order_solver
+    stoch_simul( order = 1, solve_algo = 0, irf = 400, periods = 0, nocorr, nofunctions, nodisplay, nograph, irf_shocks = ( epsilon_AT_5_5, epsilon_GA, epsilon_GN, epsilon_tau, epsilon_phi, epsilon_beta ) ); // k_order_solver
 @#endif
