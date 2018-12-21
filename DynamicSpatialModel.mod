@@ -467,5 +467,6 @@ check;
 @#if Deterministic
     simul( periods = 10000, maxit = 1000000, tolf = 1e-8, tolx = 1e-8, stack_solve_algo = 7, solve_algo = 0 ); // endogenous_terminal_period
 @#else
-    stoch_simul( order = 1, solve_algo = 0, irf = 400, periods = 0, nocorr, nofunctions, nodisplay, nograph, irf_shocks = ( epsilon_AT_3_3, epsilon_GA, epsilon_GN, epsilon_tau, epsilon_phi, epsilon_beta ) ); // k_order_solver
+    options_.steady.maxit = 10000;
+    stoch_simul( order = 1, solve_algo = 0, irf = 0, periods = 1100, nocorr, nofunctions, nodisplay, nograph, irf_shocks = ( epsilon_AT_3_3, epsilon_GA, epsilon_GN, epsilon_tau, epsilon_phi, epsilon_beta ) ); // k_order_solver
 @#endif
