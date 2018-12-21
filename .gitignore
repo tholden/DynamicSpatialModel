@@ -16,3 +16,5 @@ checksum
 
 DynamicSpatialModel.m
 Results/subtightplot.m
+*.mexw64
+*.c
