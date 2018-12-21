@@ -115,7 +115,7 @@ Omega = 3; // pop/km^2 for the contiguous US is 41.5. for wyoming it is 2.33 for
     dBar = ( @{SpatialDimensions} * ( 0.5 ^ ( @{SpatialNorm} ) ) ) ^ ( 1 / ( @{SpatialNorm} ) );
 @#endif
 
-model;
+model( use_dll );
 
     @#include "InsertNewModelEquations.mod"
     
@@ -452,7 +452,7 @@ shocks;
 end;
 
 options_.qz_criterium = 1 + 1e-6;
-options_.endogenous_qz_criterium = 0;
+options_.endogenous_qz_criterium = 1;
 options_.accurate_nonstationarity = 1;
 
 steady;
