@@ -4,7 +4,7 @@
 @#define UsingGrowthSyntax = 1
 
 @#define SpatialDimensions = 2
-@#define SpatialPointsPerDimension = 8
+@#define SpatialPointsPerDimension = 4
 @#define SpatialShape = "Torus"
 
 @#if SpatialDimensions == 1
@@ -12,6 +12,8 @@
 @#else
     @#define SpatialNorm = "2"
 @#endif
+
+@#define IntroduceInitialParams = 1
 
 @#if SpatialShape[1] == "P"
     @#define SpatialShockProcesses = SpatialShockProcesses + [ "AT", "0", "Inf", "1", "1", "0.001", "exp(-zeta*@)#" ]
@@ -88,7 +90,7 @@ thetaC = 4;
 thetaF = 1; // food off-premises, food services + clothing = about 20% of ( PCE minus housing ) https://www.bea.gov/iTable/iTable.cfm?reqid=19&step=2#reqid=19&step=3&isuri=1&1910=x&0=-9&1921=survey&1903=65&1904=2015&1905=2017&1906=a&1911=0
 thetaL = 0.25 / 0.75 * thetaF * gamma; // target of 0.75 for steady-state land use in agriculture, following data from https://www.ers.usda.gov/data-products/major-land-uses/
 thetaH = 4;
-thetaN = 5.1;
+thetaN = 6;
 psi1 = 0.5;
 psi2 = 0.5;
 psi3 = psi1 * 0.02 / ( 1 - 0.02 ); // http://eyeonhousing.org/2013/01/latest-study-shows-average-buyer-expected-to-stay-in-a-home-13-years/
@@ -449,7 +451,9 @@ shocks;
     @#endif
 end;
 
-options_.qz_criterium = 1 - 1e-8;
+options_.qz_criterium = 1 + 1e-6;
+options_.endogenous_qz_criterium = 0;
+options_.accurate_nonstationarity = 1;
 
 steady;
 check;
@@ -463,5 +467,5 @@ check;
 @#if Deterministic
     simul( periods = 10000, maxit = 1000000, tolf = 1e-8, tolx = 1e-8, stack_solve_algo = 7, solve_algo = 0 ); // endogenous_terminal_period
 @#else
-    stoch_simul( order = 1, solve_algo = 0, irf = 400, periods = 0, nocorr, nofunctions, nodisplay, nograph, irf_shocks = ( epsilon_AT_5_5, epsilon_GA, epsilon_GN, epsilon_tau, epsilon_phi, epsilon_beta ) ); // k_order_solver
+    stoch_simul( order = 1, solve_algo = 0, irf = 400, periods = 0, nocorr, nofunctions, nodisplay, nograph, irf_shocks = ( epsilon_AT_3_3, epsilon_GA, epsilon_GN, epsilon_tau, epsilon_phi, epsilon_beta ) ); // k_order_solver
 @#endif
