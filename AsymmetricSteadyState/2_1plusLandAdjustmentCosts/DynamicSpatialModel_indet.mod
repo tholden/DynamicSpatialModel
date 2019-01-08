@@ -4,7 +4,7 @@
 @#define UsingGrowthSyntax = 1
 
 @#define SpatialDimensions = 2
-@#define SpatialPointsPerDimension = 3
+@#define SpatialPointsPerDimension = 2
 @#define SpatialShape = "Torus"
 
 @#if SpatialDimensions == 1
@@ -14,9 +14,9 @@
 @#endif
 
 @#if SpatialShape[1] == "P"
-    @#define SpatialShockProcesses = SpatialShockProcesses + [ "AT", "0", "Inf", "1", "0.9", "0.01", "exp(-zeta*@)#" ]
+    @#define SpatialShockProcesses = SpatialShockProcesses + [ "AT", "0", "Inf", "1", "0.9", "0.001", "exp(-zeta*@)#" ]
 @#else
-    @#define SpatialShockProcesses = SpatialShockProcesses + [ "AT", "0", "Inf", "1", "0.9", "0.01", "(exp(-zeta*@+zeta*dBar)+exp(zeta*@-zeta*dBar))/(exp(zeta*dBar)+exp(-zeta*dBar))#" ]
+    @#define SpatialShockProcesses = SpatialShockProcesses + [ "AT", "0", "Inf", "1", "0.9", "0.001", "(exp(-zeta*@+zeta*dBar)+exp(zeta*@-zeta*dBar))/(exp(zeta*dBar)+exp(-zeta*dBar))#" ]
 @#endif
 
 @#define ShockProcesses = ShockProcesses + [ "GA", "0", "Inf", "1.005", "0.8", "0.001" ]
@@ -80,11 +80,11 @@ gamma = 0.5;
 kappa = 0.5;
 nu = 2;
 varsigma = 1.5;
-zeta = param_zeta;
-lambda = param_lambda;
+zeta = 8;
+lambda = 0.1;
 deltaJ = 0.01;
 deltaK = 0.03;
-Phi2 = param_Phi2;
+Phi2 = 4;
 PhiL = param_PhiL;
 
 thetaC = 4;
@@ -108,7 +108,7 @@ psi2 = psi2 / UtilityParamSum;
 psi3 = psi3 / UtilityParamSum;
 
 Gamma = 1;
-Omega = param_Omega; // pop/km^2 for the contiguous US is 41.5. for wyoming it is 2.33 for new jersey it is 470. correspond to abs log ratios of 2.88 and 2.43 respectively.
+Omega = 3; // pop/km^2 for the contiguous US is 41.5. for wyoming it is 2.33 for new jersey it is 470. correspond to abs log ratios of 2.88 and 2.43 respectively.
 
 @#if SpatialShape[1] == "P"
     dBar = ( @{SpatialDimensions} ) ^ ( 1 / ( @{SpatialNorm} ) );
@@ -119,7 +119,7 @@ Omega = param_Omega; // pop/km^2 for the contiguous US is 41.5. for wyoming it i
 model;
 
     @#include "InsertNewModelEquations.mod"
-
+    
        GYTrend    = ( GA * GN ) ^ ( ( 1 - alpha ) * ( 1 - kappa ) * ( 1 + lambda ) / ( ( 1 - alpha ) * ( 1 - kappa ) * ( 1 + lambda ) - lambda ) );
        GZTrend    = GYTrend ^ ( 1 / ( 1 + lambda ) );
     // GJTrend    = GYTrend ^ ( 1 / ( 1 + lambda ) );
@@ -134,7 +134,7 @@ model;
     // GYBarTrend = GYTrend ^ ( - gamma / lambda );
        GUTrend    = GYTrend ^ ( thetaC + thetaF * ( 1 - gamma ) / ( 1 + lambda ) ) / GN ^ ( thetaC + thetaF + thetaL );
        GmuNTrend  = GYTrend ^ ( (  thetaC + thetaF * ( 1 - gamma ) / ( 1 + lambda ) ) * ( 1 - varsigma ) ) / GN ^ ( ( thetaC + thetaF + thetaL ) * ( 1 - varsigma ) );
-
+    
     #N = 0
     @#for Point1 in 1 : SpatialNumPoints
         @#define Index1 = IndicesStringArray[Point1]
@@ -148,27 +148,27 @@ model;
         + Weight@{Index1} * N@{Index1}_LAG
     @#endfor
     ;
-
+    
     @#for Point1 in 1 : SpatialNumPoints
         @#define Index1 = IndicesStringArray[Point1]
-
+        
         #A@{Index1} = AP * AT@{Index1};
         #A@{Index1}_LEAD = AP_LEAD * AT@{Index1}_LEAD;
-
+        
         #ZF@{Index1} = ( F@{Index1} / L@{Index1} ^ gamma ) ^ ( 1 / ( 1 - gamma ) );
         #SRL@{Index1} = gamma * F@{Index1} / L@{Index1};
         #SP@{Index1} = ( 1 - gamma ) * F@{Index1} / ZF@{Index1};
 
         #ZF@{Index1}_LEAD = ( F@{Index1}_LEAD / L@{Index1}_LEAD ^ gamma ) ^ ( 1 / ( 1 - gamma ) );
         #SP@{Index1}_LEAD = ( 1 - gamma ) * F@{Index1}_LEAD / ZF@{Index1}_LEAD;
-
+        
         K@{Index1} = ( 1 - deltaK ) * K@{Index1}_LAG + ( 1 - Phi2 / 2 * ( I@{Index1} / I@{Index1}_LAG - 1 ) ^ 2 ) * I@{Index1};
-
+        
         @#for Point2 in 1 : SpatialNumPoints
             @#define Index2 = IndicesStringArray[Point2]
             #SN@{Index1}@{Index2} = psi3 * N@{Index2}_LAG / N_LAG / ( ( muN@{Index1} - muN@{Index2} ) / ( ( 1 - varsigma ) * N@{Index1}_LAG * U@{Index1} ^ ( 1 - varsigma ) ) + psi1 / ( N@{Index1}_LAG - SN@{Index1} ) + psi2 * ( Distance@{Index1}@{Index2} * SN@{Index1} - SD@{Index1} ) / ( dBar * SN@{Index1} * SN@{Index1} - SN@{Index1} * SD@{Index1} ) );
         @#endfor
-
+        
         SN@{Index1} = 0
         @#for Point2 in 1 : SpatialNumPoints
             @#define Index2 = IndicesStringArray[Point2]
@@ -182,7 +182,7 @@ model;
             + Weight@{Index2} * Distance@{Index1}@{Index2} * SN@{Index1}@{Index2}
         @#endfor
         ;
-
+        
         U@{Index1} = ( C@{Index1} / N@{Index1}_LAG ) ^ thetaC
         * ( E@{Index1} / N@{Index1}_LAG ) ^ thetaF
         * ( ( 1 - L@{Index1} ) / N@{Index1}_LAG ) ^ thetaL
@@ -196,7 +196,7 @@ model;
             + Weight@{Index2} * N@{Index2}_LAG / N_LAG * log( SN@{Index1}@{Index2} / N@{Index1}_LAG )
         @#endfor
         ) );
-
+        
         muN@{Index1} = beta * ( muN@{Index1}_LEAD * GN_LEAD + U@{Index1}_LEAD ^ ( 1 - varsigma ) + ( 1 - varsigma ) * U@{Index1}_LEAD ^ ( 1 - varsigma ) * (
             thetaH * ( H@{Index1}_LEAD / N@{Index1} ) ^ ( 1 + nu ) / ( 1 / ( 1 + nu ) * Gamma ^ ( 1 + nu ) - 1 / ( 1 + nu ) * ( H@{Index1}_LEAD / N@{Index1} ) ^ ( 1 + nu ) )
             - thetaN * log( N@{Index1} / N ) / ( 1 / 2 * Omega ^ 2 - 1 / 2 * log( N@{Index1} / N ) ^ 2 )
@@ -204,7 +204,7 @@ model;
             - ( thetaC + thetaF + thetaL + psi3 )
         ) );
     @#endfor
-
+    
     @#define Index1 = IndicesStringArray[1]
     #Xi_LEAD = beta * ( N@{Index1} / N@{Index1}_LAG ) * ( E@{Index1} / E@{Index1}_LEAD ) * ( U@{Index1}_LEAD / U@{Index1} ) ^ ( 1 - varsigma );
 
@@ -224,65 +224,65 @@ model;
         @#endfor
         ;
     @#endfor
-
+    
     1 = 0
     @#for Point2 in 1 : SpatialNumPoints
         @#define Index2 = IndicesStringArray[Point2]
         + Weight@{Index2} * N@{Index2}
     @#endfor
-    ;
+    ;    
 
     @#for Point1 in 1 : SpatialNumPoints
         @#define Index1 = IndicesStringArray[Point1]
-
+        
         #P@{Index1} = ( 1 + lambda ) * ( 0
         @#for Point2 in 1 : SpatialNumPoints
             @#define Index2 = IndicesStringArray[Point2]
             + Weight@{Index2} * J@{Index2} * ( SP@{Index2} * exp( tau * Distance@{Index1}@{Index2} ) ) ^ ( - 1 / lambda )
         @#endfor
         ) ^ ( - lambda );
-
+        
         #P@{Index1}_LEAD = ( 1 + lambda ) * ( 0
         @#for Point2 in 1 : SpatialNumPoints
             @#define Index2 = IndicesStringArray[Point2]
             + Weight@{Index2} * J@{Index2}_LEAD * ( SP@{Index2}_LEAD * exp( tau * Distance@{Index1}@{Index2} ) ) ^ ( - 1 / lambda )
         @#endfor
         ) ^ ( - lambda );
-
+        
         #Z@{Index1} = ( ( K@{Index1}_LAG ^ alpha * ( A@{Index1} * H@{Index1} ) ^ ( 1 - alpha ) ) ^ ( 1 - kappa ) * ( kappa * SP@{Index1} / P@{Index1} ) ^ kappa ) ^ ( 1 / ( 1 - kappa ) );
         #Z@{Index1}_LEAD = ( ( K@{Index1} ^ alpha * ( A@{Index1}_LEAD * H@{Index1}_LEAD ) ^ ( 1 - alpha ) ) ^ ( 1 - kappa ) * ( kappa * SP@{Index1}_LEAD / P@{Index1}_LEAD ) ^ kappa ) ^ ( 1 / ( 1 - kappa ) );
         #M@{Index1} = kappa * SP@{Index1} * Z@{Index1} / P@{Index1};
         #SRK@{Index1} = ( 1 - kappa ) * alpha * SP@{Index1} * Z@{Index1} / K@{Index1}_LAG;
         #SRK@{Index1}_LEAD = ( 1 - kappa ) * alpha * SP@{Index1}_LEAD * Z@{Index1}_LEAD / K@{Index1};
         #W@{Index1} = ( 1 - kappa ) * ( 1 - alpha ) * SP@{Index1} * Z@{Index1} / H@{Index1};
-
+        
         1 = Xi_LEAD * ( SRK@{Index1}_LEAD + Q@{Index1}_LEAD * ( 1 - deltaK ) ) / Q@{Index1};
         P@{Index1} = Q@{Index1} * ( 1 - Phi2 / 2 * ( I@{Index1} / I@{Index1}_LAG - 1 ) ^ 2 - Phi2 * ( I@{Index1} / I@{Index1}_LAG - 1 ) * I@{Index1} / I@{Index1}_LAG ) + Xi_LEAD * Q@{Index1}_LEAD * Phi2 * ( I@{Index1}_LEAD / I@{Index1} - 1 ) * ( I@{Index1}_LEAD / I@{Index1} ) ^ 2;
         #Y@{Index1} = C@{Index1} + I@{Index1} + M@{Index1};
         thetaC * E@{Index1} = thetaF * P@{Index1} * C@{Index1};
-        thetaL * E@{Index1} = thetaF * ( SRL@{Index1} - PhiL * ( L@{Index1} / L@{Index1}_LAG - 1 ) / L@{Index1}_LAG + Xi_LEAD * PhiL * ( L@{Index1}_LEAD / L@{Index1} - 1 ) * ( L@{Index1}_LEAD / ( L@{Index1}^2 ) ) ) * ( 1 - L@{Index1} );
+        thetaL * E@{Index1} = thetaF * ( SRL@{Index1} - PhiL * ( L@{Index1} / L@{Index1}_LAG - 1 ) / L@{Index1}_LAG + Xi_LEAD * PhiL * ( L@{Index1}_LEAD / L@{Index1} - 1 ) * ( L@{Index1}_LEAD / ( L@{Index1}^2 ) ) ) * ( 1 - L@{Index1} ); 
         thetaH * ( H@{Index1} / N@{Index1}_LAG ) ^ nu = thetaF * N@{Index1} / E@{Index1} * W@{Index1} * ( 1 / ( 1 + nu ) * Gamma ^ ( 1 + nu ) - 1 / ( 1 + nu ) * ( H@{Index1} / N@{Index1}_LAG ) ^ ( 1 + nu ) );
     @#endfor
 
     @#for Point1 in 1 : SpatialNumPoints
         @#define Index1 = IndicesStringArray[Point1]
-
+        
         #YBar@{Index1} = 0
         @#for Point2 in 1 : SpatialNumPoints
             @#define Index2 = IndicesStringArray[Point2]
             + Weight@{Index2} * Y@{Index2} * P@{Index2} ^ ( ( 1 + lambda ) / lambda ) * exp( - tau / lambda * Distance@{Index1}@{Index2} )
         @#endfor
         ;
-
+        
         #Pi@{Index1} = lambda / ( 1 + lambda ) * ( 1 + lambda ) ^ ( - 1 / lambda ) * SP@{Index1} ^ ( - 1 / lambda ) * YBar@{Index1};
-
+        
         phi * SP@{Index1} = Pi@{Index1} + ( 1 - deltaJ ) * Xi_LEAD * phi_LEAD * SP@{Index1}_LEAD;
-
+        
         Z@{Index1} = ZF@{Index1} + phi * ( J@{Index1} - ( 1 - deltaJ ) * J@{Index1}_LAG ) + J@{Index1} * ( ( 1 + lambda ) * SP@{Index1} ) ^ ( - ( 1 + lambda ) / lambda ) *  YBar@{Index1};
     @#endfor
-
+    
     1 = R * Xi_LEAD;
-
+    
     0 = 0
     @#for Point1 in 1 : SpatialNumPoints
         @#define Index1 = IndicesStringArray[Point1]
@@ -298,7 +298,7 @@ model;
         @#endfor
         ;
     @#endfor
-
+    
 end;
 
 @#if SpatialShape[1] == "P"
@@ -315,7 +315,7 @@ end;
 
     steady_state_model;
         @#include "InsertNewStartSteadyStateEquations.mod"
-
+        
            GYTrend_    = ( GA_ * GN_ ) ^ ( ( 1 - alpha ) * ( 1 - kappa ) * ( 1 + lambda ) / ( ( 1 - alpha ) * ( 1 - kappa ) * ( 1 + lambda ) - lambda ) );
            GZTrend_    = GYTrend_ ^ ( 1 / ( 1 + lambda ) );
            GJTrend_    = GYTrend_ ^ ( 1 / ( 1 + lambda ) );
@@ -349,9 +349,9 @@ end;
         SD_1_ = GetSD_1_( psi1, psi2, psi3, N_1_LAG_, SN_1_, dBar
         @#for Point2 in 1 : SpatialNumPoints
             @#define Index2 = IndicesStringArray[Point2]
-            , Distance@{Index1}@{Index2}_
+            , Distance@{Index1}@{Index2}_ 
         @#endfor
-        );
+        );    
 
         @#for Point2 in 1 : SpatialNumPoints
             @#define Index2 = IndicesStringArray[Point2]
@@ -374,7 +374,7 @@ end;
         K_1_ = GetK_1_( 1 );
         H_1_ = GetH_1_( 1 );
         Q_1_ = GetQ_1_( 1 );
-
+        
         ZF_1_ = ( F_1_ / L_1_ ^ gamma ) ^ ( 1 / ( 1 - gamma ) );
         SP_1_ = ( 1 - gamma ) * F_1_ / ZF_1_;
         P_1_ = P_1_Over_Q_1_ * Q_1_;
@@ -407,7 +407,7 @@ end;
         U_1_LEAD_ = U_1_ * GUTrend_;
         H_1_LEAD_ = H_1_ * GN_;
         muN_1_ = beta_ * ( U_1_LEAD_ ^ ( 1 - varsigma ) + ( 1 - varsigma ) * U_1_LEAD_ ^ ( 1 - varsigma ) * ( thetaH * ( H_1_LEAD_ / N_1_ ) ^ ( 1 + nu ) / ( 1 / ( 1 + nu ) * Gamma ^ ( 1 + nu ) - 1 / ( 1 + nu ) * ( H_1_LEAD_ / N_1_ ) ^ ( 1 + nu ) ) + psi1 * SN_1_ * GN_ / ( N_1_ - SN_1_ * GN_ ) - ( thetaC + thetaF + thetaL + psi3 ) ) ) / ( 1 - beta_ * GmuNTrend_ * GN_ );
-
+        
         @#for VariableName in AggregatedVariables
             @{VariableName}_ = @{VariableName}_1_;
         @#endfor
@@ -429,7 +429,7 @@ end;
             muN@{Index1}_ = muN_1_;
             U@{Index1}_ = U_1_;
         @#endfor
-
+        
         @#include "InsertNewEndSteadyStateEquations.mod"
     end;
 
@@ -454,6 +454,8 @@ end;
 
 options_.qz_criterium = 1 - 1e-8;
 
+
+
 steady;
 check;
 
@@ -467,5 +469,4 @@ check;
     simul( periods = 10000, maxit = 1000000, tolf = 1e-8, tolx = 1e-8, stack_solve_algo = 7, solve_algo = 0 ); // endogenous_terminal_period
 @#else
     %stoch_simul( order = 1, irf = 400, periods = 0, nocorr, nofunctions, nodisplay, nograph, irf_shocks = ( epsilon_AT_2_2, epsilon_GA, epsilon_GN, epsilon_tau, epsilon_phi, epsilon_beta ) ); // k_order_solver
-    stoch_simul( order = 1, irf = 0, periods = 10000, nocorr, nofunctions, nodisplay, nograph ); // k_order_solver
 @#endif

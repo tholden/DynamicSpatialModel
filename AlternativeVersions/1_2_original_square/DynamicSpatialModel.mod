@@ -306,11 +306,11 @@ end;
     @#define LoadSteadyState = 0
 @#endif
 
-@#if LoadSteadyState
+%@#if LoadSteadyState
 
-    load_params_and_steady_state( 'SteadyState.txt' );
+    %load_params_and_steady_state( 'SteadyState.txt' );
 
-@#else
+%@#else
 
     steady_state_model;
         @#include "InsertNewStartSteadyStateEquations.mod"
@@ -335,10 +335,10 @@ end;
         N_ = 1;
         N_LAG_ = 1/GN_;
 
-        E_by_F_1_ = GetE_1_by_F_1( 1 , SpatialPointsPerDimension,  GN_ , nu, gamma, Gamma, Omega, 
-            lambda, phi_, deltaJ, GJTrend_, thetaC, thetaF, thetaH, thetaL, thetaN, kappa, alpha, GYTrend_, 
+        E_by_F_1_ = GetE_1_by_F_1( 1 , SpatialPointsPerDimension,  GN_ , nu, gamma, Gamma, Omega,
+            lambda, phi_, deltaJ, GJTrend_, thetaC, thetaF, thetaH, thetaL, thetaN, kappa, alpha, GYTrend_,
             GSRKTrend_, Xi_LEAD_, deltaK, Phi2, GSPTrend_ , GmuNTrend_, GUTrend_, psi1,
-            psi2, psi3, tau_, dBar, beta_, varsigma ); 
+            psi2, psi3, tau_, dBar, beta_, varsigma );
 
 
         @#for Point1 in 1 : SpatialNumPoints
@@ -351,19 +351,19 @@ end;
 
         @#for Point1 in 1 : SpatialNumPoints
             @#define Index1 = IndicesStringArray[Point1]
-            E_by_F_@{Index1}_ = GetE_x_by_F_x_( Point1 ); 
-            N_@{Index1}_ = GetN_x_( Point1 ); 
-            F_@{Index1}_ = GetF_x_( Point1 ); 
-            K_@{Index1}_ = GetK_x_( Point1 ); 
-            H_@{Index1}_ = GetH_x_( Point1 ); 
-            Q_@{Index1}_ = GetQ_x_( Point1 ); 
-            SN_@{Index1}_ = GetSN_x_( Point1 , SpatialPointsPerDimension ); 
+            E_by_F_@{Index1}_ = GetE_x_by_F_x_( Point1 );
+            N_@{Index1}_ = GetN_x_( Point1 );
+            F_@{Index1}_ = GetF_x_( Point1 );
+            K_@{Index1}_ = GetK_x_( Point1 );
+            H_@{Index1}_ = GetH_x_( Point1 );
+            Q_@{Index1}_ = GetQ_x_( Point1 );
+            SN_@{Index1}_ = GetSN_x_( Point1 , SpatialPointsPerDimension );
             SD_@{Index1}_ = GetSD_x_( Point1 , SpatialPointsPerDimension );
             A_@{Index1}_ = 1;
             A_@{Index1}_LEAD_ = GA_;
-            N_LAG_@{Index1}_ = N_@{Index1}_ ./ GN_; 
+            N_LAG_@{Index1}_ = N_@{Index1}_ ./ GN_;
             P_Over_Q_@{Index1}_ = ( 1 - Phi2 / 2 * ( GYTrend_ - 1 ) ^ 2 - Phi2 * ( GYTrend_ - 1 ) * GYTrend_ ) + Xi_LEAD_ * GQTrend_ * Phi2 * ( GYTrend_ - 1 ) * GYTrend_ ^ 2;
-            E_@{Index1}_  = E_by_F_@{Index1}_ * F_@{Index1}_;    
+            E_@{Index1}_  = E_by_F_@{Index1}_ * F_@{Index1}_;
             L_@{Index1}_  = thetaF * gamma / ( thetaL * E_by_F_@{Index1}_  + thetaF * gamma );
             ZF_@{Index1}_ = ( F_@{Index1}_ / L_@{Index1}_ ^ gamma ) ^ ( 1 / ( 1 - gamma ) );
             SP_@{Index1}_ = ( 1 - gamma ) * F_@{Index1}_ / ZF_@{Index1}_;
@@ -385,7 +385,7 @@ end;
                 @#define Index2 = IndicesStringArray[Point2]
                 SN@{Index1}@{Index2}_ = GetSNxx_( Point1 , Point2 );
             @#endfor
-            J_@{Index1}_ = ( Z_@{Index1}_ - ZF_@{Index1}_ ) ./ ( phi_ .* ( 1 - ( 1 - deltaJ ) ./ GJTrend_ ) + ( ( 1 + lambda ) .* SP_@{Index1}_ ) .^ ( - ( 1 + lambda ) ./ lambda ) .*  YBar_@{Index1}_ ); 
+            J_@{Index1}_ = ( Z_@{Index1}_ - ZF_@{Index1}_ ) ./ ( phi_ .* ( 1 - ( 1 - deltaJ ) ./ GJTrend_ ) + ( ( 1 + lambda ) .* SP_@{Index1}_ ) .^ ( - ( 1 + lambda ) ./ lambda ) .*  YBar_@{Index1}_ );
             U@{Index1}_ = ( C@{Index1}_ / N@{Index1}_LAG_ ) ^ thetaC
             * ( E@{Index1}_ / N_LAG_@{Index1}_ ) ^ thetaF
             * ( ( 1 - L@{Index1}_ ) / N_LAG_@{Index1}_ ) ^ thetaL
@@ -421,7 +421,7 @@ end;
          @#include "InsertNewEndSteadyStateEquations.mod"
     end;
 
-@#endif
+%@#endif
 
 @#define Deterministic = 0
 
