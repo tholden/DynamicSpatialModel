@@ -452,7 +452,8 @@ shocks;
 end;
 
 options_.qz_criterium = 1 + 1e-6;
-options_.endogenous_qz_criterium = 1;
+options_.qz_zero_threshold = 1e-16;
+options_.endogenous_qz_criterium = 5;
 options_.accurate_nonstationarity = 1;
 
 steady;
@@ -468,5 +469,6 @@ check;
     simul( periods = 10000, maxit = 1000000, tolf = 1e-8, tolx = 1e-8, stack_solve_algo = 7, solve_algo = 0 ); // endogenous_terminal_period
 @#else
     options_.steady.maxit = 10000;
+    options_.solve_tolf = 1e-4;
     stoch_simul( order = 1, solve_algo = 0, irf = 0, periods = 1100, nocorr, nofunctions, nodisplay, nograph, irf_shocks = ( epsilon_AT_3_3, epsilon_GA, epsilon_GN, epsilon_tau, epsilon_phi, epsilon_beta ) ); // k_order_solver
 @#endif
