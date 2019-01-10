@@ -1,8 +1,32 @@
+% Errors on equations:
+% Migration into Index1
+SN@{Index1} = sum ( Weight@{Index2} * SN@{Index1}@{Index2} );
+% Population law of motion
+N@{Index1} = GN * N@{Index1}_LAG - SN@{Index1} + sum( Weight@{Index2} * SN@{Index2}@{Index1} );
+
+
+% mod:
+SN@{Index1} = sum ( Weight@{Index2} * SN@{Index1}@{Index2} );
+% mod SS (external function): 
+SN_x = sum( Weight( tildex ) * ( SNxx_( Index , tildex ) ) );
+% SS solver
+SN_x_ = sum( Weight( tildex ) * ( SNxx_( x , tildex ) ) );
+% correct in all locations. Must be an error in the definition of SNxx (#)
+
+% mod:
+SN@{Index1}@{Index2} = psi3 * N@{Index2}_LAG / N_LAG / ( ( muN@{Index1} - muN@{Index2} ) / ( ( 1 - varsigma ) * N@{Index1}_LAG * U@{Index1} ^ ( 1 - varsigma ) ) + psi1 / ( N@{Index1}_LAG - SN@{Index1} ) + psi2 * ( Distance@{Index1}@{Index2} * SN@{Index1} - SD@{Index1} ) / ( dBar * SN@{Index1} * SN@{Index1} - SN@{Index1} * SD@{Index1} ) )
+% 
 
 
 
-YBar(x) = sum( w(xtilde) * Y(xtilde) * P(xtilde) ^ ( ( 1 + lambda ) / lambda ) * exp( - tau / lambda * Distance(x,xtilde) ) );
-Pi(x)   = lambda / ( 1 + lambda ) * ( 1 + lambda ) ^ ( - 1 / lambda ) * SP(x) ^ ( - 1 / lambda ) * YBar(x);
+
+
+
+
+
+
+
+
 
 % Firm entry - nonlinear solver
 phi * SP(x) = Pi(x) + ( 1 - deltaJ ) * Xi_LEAD * phi_LEAD * SP_LEAD(x);

@@ -1,10 +1,13 @@
-function Utilde_x = Get_Utilde( SpatialPointsPerDimension, index )
+function Utilde_x = Get_Utilde( SpatialPointsPerDimension, index, homotopy )
 
 % figure;
 % SpatialPointsPerDimension=3;
 
 sigma = 0.01;
-scale = 1;
+scale = 0.26328;
+%scale = 0.3;
+%scale = 0.2637;
+scale = 0.2;
 center = [round(SpatialPointsPerDimension/2) round(SpatialPointsPerDimension/2)];
 
 gsize = [SpatialPointsPerDimension SpatialPointsPerDimension];
@@ -17,6 +20,6 @@ Utilde = 1+Utilde-mean(mean(Utilde));
 % ratio = max(max(Utilde))/min(min(Utilde))
 % mean(mean(Utilde))
 
-Utilde_x = 1 + 0.1*(Utilde( index )-1);
+Utilde_x = 1 + homotopy*(Utilde( index )-1);
 
 end

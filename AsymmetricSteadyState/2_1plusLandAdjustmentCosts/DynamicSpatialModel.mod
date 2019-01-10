@@ -125,7 +125,7 @@ Omega = param_Omega; // pop/km^2 for the contiguous US is 41.5. for wyoming it i
 @#for Point1 in 1 : SpatialNumPoints
     @#define Index1 = IndicesStringArray[Point1]
     parameters UtildeSS@{Index1};
-    UtildeSS@{Index1} =  Get_Utilde( @{SpatialPointsPerDimension} , @{Point1} );
+    UtildeSS@{Index1} =  Get_Utilde( @{SpatialPointsPerDimension} , @{Point1} , 1 );
 @#endfor
 
 model;
@@ -181,6 +181,7 @@ model;
             #SN@{Index1}@{Index2} = psi3 * N@{Index2}_LAG / N_LAG / ( ( muN@{Index1} - muN@{Index2} ) / ( ( 1 - varsigma ) * N@{Index1}_LAG * U@{Index1} ^ ( 1 - varsigma ) ) + psi1 / ( N@{Index1}_LAG - SN@{Index1} ) + psi2 * ( Distance@{Index1}@{Index2} * SN@{Index1} - SD@{Index1} ) / ( dBar * SN@{Index1} * SN@{Index1} - SN@{Index1} * SD@{Index1} ) );
         @#endfor
 
+[name = 'Migration into @{Index1} (point @{Point1})']
         SN@{Index1} = 0
         @#for Point2 in 1 : SpatialNumPoints
             @#define Index2 = IndicesStringArray[Point2]
@@ -366,7 +367,7 @@ end;
                 Utilde@{Index1}_ = UtildeSS@{Index1};
            @#endfor
 
-           E_by_F_1_ = GetE_1_by_F_1( 1 , @{SpatialPointsPerDimension},  GN_ , nu, gamma, Gamma, Omega, 
+           E_by_F_1_ = GetE_1_by_F_1_homotopy( 1 , @{SpatialPointsPerDimension},  GN_ , nu, gamma, Gamma, Omega, 
                lambda, phi_, deltaJ, GJTrend_, thetaC, thetaF, thetaH, thetaL, thetaN, kappa, alpha, GYTrend_,
                GSRKTrend_, Xi_LEAD_, deltaK, Phi2, GSPTrend_ , GmuNTrend_, GUTrend_, psi1,
                psi2, psi3, tau_, dBar, beta_, varsigma );
