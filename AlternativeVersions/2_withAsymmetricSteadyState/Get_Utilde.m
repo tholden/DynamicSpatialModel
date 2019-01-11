@@ -4,7 +4,7 @@ function Utilde_x = Get_Utilde( SpatialPointsPerDimension, index, homotopy )
 % SpatialPointsPerDimension=3;
 
 sigma = 0.01;
-scale = 0.26328;
+%scale = 0.26328;
 %scale = 0.3;
 %scale = 0.2637;
 scale = 0.2;
