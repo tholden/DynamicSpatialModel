@@ -5,9 +5,9 @@ global par
 SpatialDimensions = 2;
 SpatialNorm = 2;
 
-param_thetaN = 5; %10
+param_thetaN = 4.5; %10
 param_Omega = 2.5; %3
-param_lambda = 0.1; %0.1
+param_lambda = 0.05; %0.1
 
 param_Phi2 = 4; %4
 param_PhiL = 2; %2

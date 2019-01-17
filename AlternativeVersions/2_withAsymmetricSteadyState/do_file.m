@@ -34,6 +34,28 @@ disp(['Max eating per head ratio: ',num2str(Ex(cent_pt,cent_pt) * Nx(1,1)/( Ex(1
 disp(['Max consumption per head ratio: ',num2str(Cx(cent_pt,cent_pt) * Nx(1,1)/( Cx(1,1) * Nx(cent_pt,cent_pt)))]);
 disp(['Max food production ratio: ',num2str(Fx(1,1)/Fx(cent_pt,cent_pt))]);
 
+rel_Kx = Kx / mean(mean(Kx));
+rel_Hx = Hx / mean(mean(Hx));
+
+figure;
+scatter(Nx(:),rel_Kx(:),30,'filled','MarkerEdgeColor',[0, 0.4470, 0.7410],'MarkerFaceColor',[0, 0.4470, 0.7410]); hold on;
+scatter(rel_Hx(:),rel_Kx(:),30,'filled','MarkerEdgeColor',[165/255, 165/255, 165/255],'MarkerFaceColor',[165/255, 165/255, 165/255]); 
+lin_K1 = polyfit(Nx(:),rel_Kx(:),1);
+lin_K1 = polyval(lin_K1,Nx(:));
+lin_K2 = polyfit(rel_Hx(:),rel_Kx(:),1);
+lin_K2 = polyval(lin_K2,rel_Hx(:));
+plot([min(Nx(:)) max(Nx(:))],[min(lin_K1) max(lin_K1)],':','color',[0, 0.4470, 0.7410]);
+plot([min(rel_Hx(:)) max(rel_Hx(:))],[min(lin_K2) max(lin_K2)],':','color',[165/255, 165/255, 165/255]);
+xlabel('Relative population'); ylabel('Relative capital')
+set(gca, 'XTick', 0:5)
+set(gca, 'YTick', 0:6)
+legend({'Total pop','Labour force'},'location','southoutside','orientation','horizontal')
+axis tight
+grid on
+
+disp(['Slope of labour slope: ',num2str((min(lin_K2)-max(lin_K2))/(min(rel_Hx(:))-max(rel_Hx(:))))])
+disp(['Slope of total pop slope: ',num2str((min(lin_K1)-max(lin_K1))/(min(rel_Hx(:))-max(rel_Hx(:))))])
+
 end
                 
 %% Solve model
