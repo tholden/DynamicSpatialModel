@@ -5,76 +5,37 @@ function E_1_by_F_1_ = GetE_1_by_F_1( shape , SpatialPointsPerDimension,  GN_ , 
 
     if first_run==1
         % First iteration (symmetric equilibrium)
-        E_by_F_0 = 1 * ones(SpatialPoints,1);
-        N_0 = 1 * ones(SpatialPoints,1);
-        F_0 = 0.0787 * ones(SpatialPoints,1);
-        K_0 = 0.3911 * ones(SpatialPoints,1);
-        H_0 = 0.6252 * ones(SpatialPoints,1);
-        Q_0 = 7.0009 * ones(SpatialPoints,1);  
-        SN_0_ = psi3 / ( psi1 + psi3 ) * N_0;
-        N_LAG = 1/GN_;
-        N_0_LAG = N_0./GN_;
-        SD_0 = zeros(SpatialPoints,1);
-        for i=1:SpatialPoints
-            SD_0( i ) = SolveInitialSD( psi1, psi2, psi3, N_0_LAG( i ), N_LAG,  SN_0_( i ), dBar, d( i, : ) ); 
-        end
-        for i=1:SpatialPoints
-            for j=1:SpatialPoints
-                SN_xx_0( i , j) = ( N_0_LAG( j ) / N_LAG ) * psi3 / ( psi1 / ( N_0_LAG( i ) - SN_0_( i ) ) + psi2 * ( d( i , j ) * SN_0_( i ) - SD_0( i ) ) / ( dBar * SN_0_( i ) * SN_0_( i ) - SN_0_( i ) * SD_0( i ) ) );
-            end
-        end
-        SN_xx_0 = reshape(SN_xx_0,[SpatialPoints*SpatialPoints , 1]);
+        E_by_F_0    = E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 1:SpatialPoints );
+        N_0         = E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( SpatialPoints+1:2*SpatialPoints );
+        F_0         = E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 2*SpatialPoints+1:3*SpatialPoints );
+        K_0         = E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 3*SpatialPoints+1:4*SpatialPoints );
+        H_0         = E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 4*SpatialPoints+1:5*SpatialPoints );
+        Q_0         = E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 5*SpatialPoints+1:6*SpatialPoints );
+        SN_xx_0       = E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 6*SpatialPoints+1:end );
         
-        disp('Solving symmetric equilibrium case...')
-        homotopy = 0;
-        steadystate_lsqnonlin.options =  optimoptions( 'lsqnonlin' , 'Display', 'iter', 'FunctionTolerance', 1e-8, 'MaxFunctionEvaluations', Inf, 'MaxIterations', Inf, 'OptimalityTolerance', 1e-12, 'StepTolerance', 1e-12);
-        steadystate_lsqnonlin.solver = 'lsqnonlin';
-        steadystate_lsqnonlin.objective = @( log_E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_ ) GetResidual( exp( log_E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_ ), shape, SpatialPointsPerDimension, d, GN_ , nu, gamma, Gamma, Omega, lambda, phi_, deltaJ, GJTrend_, thetaC, thetaF, thetaH, thetaL, thetaN, kappa, alpha, GYTrend_, GSRKTrend_, Xi_LEAD_, deltaK, Phi2, GSPTrend_, GmuNTrend_, GUTrend_, psi1, psi2, psi3, tau_, dBar, beta_ , varsigma, homotopy);
-        steadystate_lsqnonlin.x0 = log( [ E_by_F_0' , N_0' , F_0' , K_0' , H_0' , Q_0' , SN_xx_0' ]' );
-        E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_ = exp( lsqnonlin(steadystate_lsqnonlin) );
-
-        crit=0;
-        while crit<1
-            E_by_F_0    = E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 1:SpatialPoints );
-            N_0         = E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( SpatialPoints+1:2*SpatialPoints );
-            F_0         = E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 2*SpatialPoints+1:3*SpatialPoints );
-            K_0         = E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 3*SpatialPoints+1:4*SpatialPoints );
-            H_0         = E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 4*SpatialPoints+1:5*SpatialPoints );
-            Q_0         = E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 5*SpatialPoints+1:6*SpatialPoints );
-            SN_xx_0       = E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 6*SpatialPoints+1:end );
-            lh=homotopy;homotopy=min(1,homotopy+(1.1-homotopy)/2);
-            count=0;error_count=0;
-            while count<=error_count   
-                try  
-                    disp(['Solving asymmetric equilibrium via homotopy. Scaling factor: ',num2str(homotopy)])
-                    steadystate_lsqnonlin.options =  optimoptions( 'lsqnonlin' , 'Display', 'iter', 'FunctionTolerance', 1e-8, 'MaxFunctionEvaluations', Inf, 'MaxIterations', 25, 'OptimalityTolerance', 1e-12, 'StepTolerance', 1e-12);
-                    steadystate_lsqnonlin.solver = 'lsqnonlin';
-                    steadystate_lsqnonlin.objective = @( log_E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_ ) GetResidual( exp( log_E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_ ), shape, SpatialPointsPerDimension, d, GN_ , nu, gamma, Gamma, Omega, lambda, phi_, deltaJ, GJTrend_, thetaC, thetaF, thetaH, thetaL, thetaN, kappa, alpha, GYTrend_, GSRKTrend_, Xi_LEAD_, deltaK, Phi2, GSPTrend_, GmuNTrend_, GUTrend_, psi1, psi2, psi3, tau_, dBar, beta_ , varsigma, homotopy);
-                    steadystate_lsqnonlin.x0 = log( [ E_by_F_0' , N_0' , F_0' , K_0' , H_0' , Q_0' , SN_xx_0' ]' );
-                    [ x_temp,~,~,exitflag,~ ] = lsqnonlin(steadystate_lsqnonlin);
-                    if exitflag==0
-                        error('Max iterations reached')
-                    end
-                    E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_ = exp( x_temp );
-                    crit = homotopy;
-                    catch
-                    disp(['Solver failed. Reducing scaling factor from ',num2str(homotopy),' to ',num2str(lh+(homotopy-lh)/2)])
-                    homotopy=lh+(homotopy-lh)/2; 
-                    error_count=error_count+1;
-                end
-                count = count+1;
-            end
+        homotopy = 1;
+        steadystate_fsolve.options =  optimoptions( 'fsolve' , 'Display', 'iter','MaxIterations', 40);
+        steadystate_fsolve.solver = 'fsolve';
+        steadystate_fsolve.objective = @( log_E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_ ) GetResidual( exp( log_E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_ ), shape, SpatialPointsPerDimension, d, GN_ , nu, gamma, Gamma, Omega, lambda, phi_, deltaJ, GJTrend_, thetaC, thetaF, thetaH, thetaL, thetaN, kappa, alpha, GYTrend_, GSRKTrend_, Xi_LEAD_, deltaK, Phi2, GSPTrend_, GmuNTrend_, GUTrend_, psi1, psi2, psi3, tau_, dBar, beta_ , varsigma, homotopy);
+        steadystate_fsolve.x0 = log( [ E_by_F_0' , N_0' , F_0' , K_0' , H_0' , Q_0' , SN_xx_0' ]' );
+        [ x_temp,fval,exitflag,output ] = fsolve(steadystate_fsolve);
+        if ~exitflag==1
+            error('Equilbrium not solved')
         end
+
+        disp(['Solved equilibrium.'])
+        E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_ = exp( x_temp );          
     end
-    
+     
     figure;
-        subplot(3,2,1);surf(reshape(E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 1:SpatialPoints ),[SpatialPointsPerDimension,SpatialPointsPerDimension])); title('E_by_F');
-        subplot(3,2,2);surf(reshape(E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( SpatialPoints+1:2*SpatialPoints ),[SpatialPointsPerDimension,SpatialPointsPerDimension])); title('N');
-        subplot(3,2,3);surf(reshape(E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 2*SpatialPoints+1:3*SpatialPoints ),[SpatialPointsPerDimension,SpatialPointsPerDimension])); title('F');
-        subplot(3,2,4);surf(reshape(E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 3*SpatialPoints+1:4*SpatialPoints ),[SpatialPointsPerDimension,SpatialPointsPerDimension])); title('K');
-        subplot(3,2,5);surf(reshape(E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 4*SpatialPoints+1:5*SpatialPoints ),[SpatialPointsPerDimension,SpatialPointsPerDimension])); title('H');
-        subplot(3,2,6);surf(reshape(E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 5*SpatialPoints+1:6*SpatialPoints ),[SpatialPointsPerDimension,SpatialPointsPerDimension])); title('Q');
-                
+    subplot(3,2,1);surf(reshape(E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 1:SpatialPoints ),[SpatialPointsPerDimension,SpatialPointsPerDimension])); title('E_by_F');
+    subplot(3,2,2);surf(reshape(E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( SpatialPoints+1:2*SpatialPoints ),[SpatialPointsPerDimension,SpatialPointsPerDimension])); title('N');
+    subplot(3,2,3);surf(reshape(E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 2*SpatialPoints+1:3*SpatialPoints ),[SpatialPointsPerDimension,SpatialPointsPerDimension])); title('F');
+    subplot(3,2,4);surf(reshape(E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 3*SpatialPoints+1:4*SpatialPoints ),[SpatialPointsPerDimension,SpatialPointsPerDimension])); title('K');
+    subplot(3,2,5);surf(reshape(E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 4*SpatialPoints+1:5*SpatialPoints ),[SpatialPointsPerDimension,SpatialPointsPerDimension])); title('H');
+    subplot(3,2,6);surf(reshape(E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 5*SpatialPoints+1:6*SpatialPoints ),[SpatialPointsPerDimension,SpatialPointsPerDimension])); title('Q');
+                    
+    
     first_run=0;
     
     global E_by_F_x N_x F_x K_x H_x Q_x SNxx_

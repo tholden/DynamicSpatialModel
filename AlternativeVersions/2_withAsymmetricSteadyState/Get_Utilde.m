@@ -1,5 +1,5 @@
 function Utilde_x = Get_Utilde( SpatialPointsPerDimension, index, homotopy )
-
+global scale
 % figure;
 % SpatialPointsPerDimension=3;
 

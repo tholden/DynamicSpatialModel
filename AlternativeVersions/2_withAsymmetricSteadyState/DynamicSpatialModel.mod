@@ -4,7 +4,7 @@
 @#define UsingGrowthSyntax = 1
 
 @#define SpatialDimensions = 2
-@#define SpatialPointsPerDimension = 5
+@#define SpatialPointsPerDimension = 7
 @#define SpatialShape = "Torus"
 
 @#if SpatialDimensions == 1
@@ -367,7 +367,11 @@ end;
                 Utilde@{Index1}_ = UtildeSS@{Index1};
            @#endfor
 
-           E_by_F_1_ = GetE_1_by_F_1_homotopy( 1 , @{SpatialPointsPerDimension},  GN_ , nu, gamma, Gamma, Omega, 
+           //E_by_F_1_ = GetE_1_by_F_1_homotopy( 1 , @{SpatialPointsPerDimension},  GN_ , nu, gamma, Gamma, Omega, 
+           //    lambda, phi_, deltaJ, GJTrend_, thetaC, thetaF, thetaH, thetaL, thetaN, kappa, alpha, GYTrend_,
+           //    GSRKTrend_, Xi_LEAD_, deltaK, Phi2, GSPTrend_ , GmuNTrend_, GUTrend_, psi1,
+           //    psi2, psi3, tau_, dBar, beta_, varsigma );
+           E_by_F_1_ = GetE_1_by_F_1( 1 , @{SpatialPointsPerDimension},  GN_ , nu, gamma, Gamma, Omega, 
                lambda, phi_, deltaJ, GJTrend_, thetaC, thetaF, thetaH, thetaL, thetaN, kappa, alpha, GYTrend_,
                GSRKTrend_, Xi_LEAD_, deltaK, Phi2, GSPTrend_ , GmuNTrend_, GUTrend_, psi1,
                psi2, psi3, tau_, dBar, beta_, varsigma );

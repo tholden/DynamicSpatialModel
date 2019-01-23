@@ -1,18 +1,52 @@
-clear; close all;
+%clear global; clear;  
+close all;
 %dbstop if error
 global first_run
 first_run=1;
 
 % options
 run_indet = 0; % indeterminacy/instability region testing         
-run_singlesimulation = 0; % single time-series simulation
+run_singlesimulation = 1; % single time-series simulation
 run_steadysolver = 1; % stand-alone steady state solver
+
+% Parameters
+% param_thetaN = 0.8; 
+% param_Omega = 1.7; 
+% param_lambda = 0.05; 
+
+% param_thetaN = 4;  
+% param_Omega = 2.31908;;  
+% param_lambda = 0.1; 
+
+% param_thetaN = 1.598;  
+% param_Omega = 1.7;  
+% param_lambda = 0.1; 
+
+% param_thetaN = 2.5369;  
+% param_Omega = 2.31908;  
+% param_lambda = 0.05;
+
+
+param_thetaN = 0.7994;  
+param_Omega = 1.7;  
+param_lambda = 0.05;
+
+param_Phi2 = 4; %4
+param_PhiL = 2; %2
+param_zeta = 8; %8
+save('param_vals.mat')
 
 %% Solve steady state 
 if logical(run_steadysolver) && ~logical(run_singlesimulation)
-global E_by_F_x N_x F_x K_x H_x Q_x par
+global E_by_F_x N_x F_x K_x H_x Q_x par  
 SpatialPointsPerDimension = 7; % need to also change in mod file if simulating model
-E_by_F_1_ = solve_ss(SpatialPointsPerDimension);
+param.thetaN = param_thetaN;
+param.Omega=param_Omega;
+param.lambda=param_lambda;
+param.Phi2=param_Phi2;
+param.PhiL=param_PhiL;
+param.zeta=param_zeta;
+E_by_F_1_ = solve_ss(SpatialPointsPerDimension,param);
 E_x = E_by_F_x .* F_x;
 Nx = reshape(N_x,[SpatialPointsPerDimension,SpatialPointsPerDimension]);
 Ex = reshape(E_x,[SpatialPointsPerDimension,SpatialPointsPerDimension]);
@@ -53,32 +87,33 @@ legend({'Total pop','Labour force'},'location','southoutside','orientation','hor
 axis tight
 grid on
 
-disp(['Slope of labour slope: ',num2str((min(lin_K2)-max(lin_K2))/(min(rel_Hx(:))-max(rel_Hx(:))))])
-disp(['Slope of total pop slope: ',num2str((min(lin_K1)-max(lin_K1))/(min(rel_Hx(:))-max(rel_Hx(:))))])
+disp(['d capital / d labour force: ',num2str((min(lin_K2)-max(lin_K2))/(min(rel_Hx(:))-max(rel_Hx(:))))])
+disp(['d capital / d population: ',num2str((min(lin_K1)-max(lin_K1))/(min(rel_Hx(:))-max(rel_Hx(:))))])
 
-end
+% update metrics in excel file
+global scale
+paramvals = [param.thetaN param.Omega param.lambda param.Phi2 param.PhiL param.zeta scale];
+varvals = [ Nx(cent_pt,cent_pt)/Nx(1,1) Kx(cent_pt,cent_pt)/Kx(1,1) Hx(cent_pt,cent_pt)*Nx(1,1)/(Hx(1,1)*Nx(cent_pt,cent_pt)) Ex(cent_pt,cent_pt)*Nx(1,1)/(Ex(1,1)*Nx(cent_pt,cent_pt)) Cx(cent_pt,cent_pt)*Nx(1,1)/(Cx(1,1)*Nx(cent_pt,cent_pt)) Fx(1,1)/Fx(cent_pt,cent_pt) (min(lin_K1)-max(lin_K1))/(min(rel_Hx(:))-max(rel_Hx(:)))];
+existing = xlsread('steady_state_numbers.xlsx');
+new_data = [existing(:,1:14) ; paramvals varvals];
+%dlmwrite('steady_state_numbers.xlsx',[paramvals varvals],'delimiter',',','-append')
+xlswrite('steady_state_numbers.xlsx',new_data,1,'A2')
                 
+end
+
 %% Solve model
 if logical(run_singlesimulation)
-param_thetaN = 5; %10
-param_Omega = 2.5; %3
-param_lambda = 0.1; %0.1
-
-param_Phi2 = 4; %4
-param_PhiL = 2; %2
-param_zeta = 8; %8
-save('param_vals.mat')
 
 dynare DynamicSpatialModel
 
 % change for alternative grid sizes
 disp('*-- City vs rural statistics:  --------*')
-disp(['Average population ratio: ',num2str(mean(exp(log_N_3_3))/mean(exp(log_N_1_1)))]);
-disp(['Average capital ratio: ',num2str(mean(exp(log_K_3_3))/mean(exp(log_K_1_1)))]);
-disp(['Average hours per head ratio: ',num2str(mean(exp(log_H_3_3)) * mean(exp(log_N_1_1))/( mean(exp(log_H_1_1)) * mean(exp(log_N_3_3))))]);
-disp(['Average eating per head ratio: ',num2str(mean(exp(log_E_3_3)) * mean(exp(log_N_1_1))/( mean(exp(log_E_1_1)) * mean(exp(log_N_3_3))))]);
-disp(['Average consumption per head ratio: ',num2str(mean(exp(log_C_3_3)) * mean(exp(log_N_1_1))/( mean(exp(log_C_1_1)) * mean(exp(log_N_3_3))))]);
-disp(['Average food production ratio: ',num2str(mean(exp(log_F_1_1))/mean(exp(log_F_3_3)))]);
+disp(['Average population ratio: ',num2str(mean(exp(log_N_4_4))/mean(exp(log_N_1_1)))]);
+disp(['Average capital ratio: ',num2str(mean(exp(log_K_4_4))/mean(exp(log_K_1_1)))]);
+disp(['Average hours per head ratio: ',num2str(mean(exp(log_H_4_4)) * mean(exp(log_N_1_1))/( mean(exp(log_H_1_1)) * mean(exp(log_N_4_4))))]);
+disp(['Average eating per head ratio: ',num2str(mean(exp(log_E_4_4)) * mean(exp(log_N_1_1))/( mean(exp(log_E_1_1)) * mean(exp(log_N_4_4))))]);
+disp(['Average consumption per head ratio: ',num2str(mean(exp(log_C_4_4)) * mean(exp(log_N_1_1))/( mean(exp(log_C_1_1)) * mean(exp(log_N_4_4))))]);
+disp(['Average food production ratio: ',num2str(mean(exp(log_F_1_1))/mean(exp(log_F_4_4)))]);
 
 save(['../Results/model_2_thetaN',num2str(param_thetaN),'_PhiL',num2str(param_PhiL),'_Phi2',num2str(param_Phi2),'_Omega',num2str(param_Omega),'_zeta',num2str(param_zeta),'_lambda',num2str(param_lambda),'.mat'])
 delete('param_vals.mat')
