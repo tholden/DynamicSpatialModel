@@ -1,15 +1,16 @@
 clear; close all;
 
-opts.results_files = {'model_5b' ; 'model_7b' ; 'model_7b'};
-opts.model_names = {'Base' ; 'With renters (savers)' ; 'with renters (renters)'};
-opts.shock = { 'epsilon_AT_2_2' };
+opts.results_files = {'highlambda_highomega_withIRF' ; 'highlambda_lowomega_withIRF' ; 'lowlambda_highomega_withIRF' ; 'lowlambda_lowomega_withIRF'};
+opts.model_names = {'high lambda high omega' ; 'high lambda low omega' ; 'low lambda high omega' ; 'low lambda low omega'};
+opts.shock = { 'epsilon_AT_4_4' };
 
 % Variables to plot (file 1 and 2)
-opts.vars(:,1) = { 'log_L_1_1' ; 'log_L_2_2' ; 'log_C_1_1' ; 'log_C_2_2' ; 'log_I_1_1'  ; 'log_I_2_2' ; 'log_N_1_1' ; 'log_N_2_2' ; 'log_F_1_1' ; 'log_F_2_2' ; 'log_E_1_1' ; 'log_E_2_2' };
-opts.vars(:,2) = { 'log_L_1_1' ; 'log_L_2_2' ; 'log_Cs_1_1' ; 'log_Cs_2_2' ; 'log_I_1_1'  ; 'log_I_2_2' ; 'log_Ns_1_1' ; 'log_Ns_2_2' ; 'log_F_1_1' ; 'log_F_2_2' ; 'log_Es_1_1' ; 'log_Es_2_2' };
-opts.vars(:,3) = { 'log_L_1_1' ; 'log_L_2_2' ; 'log_Cr_1_1' ; 'log_Cr_2_2' ; 'log_I_1_1'  ; 'log_I_2_2' ; 'log_Nr_1_1' ; 'log_Nr_2_2' ; 'log_F_1_1' ; 'log_F_2_2' ; 'log_Er_1_1' ; 'log_Er_2_2' };
+opts.vars(:,1) = { 'log_L_1_1' ; 'log_L_4_4' ; 'log_C_1_1' ; 'log_C_4_4' ; 'log_I_1_1'  ; 'log_I_4_4' ; 'log_N_1_1' ; 'log_N_4_4' ; 'log_F_1_1' ; 'log_F_4_4' ; 'log_E_1_1' ; 'log_E_4_4' };
+opts.vars(:,2) = { 'log_L_1_1' ; 'log_L_4_4' ; 'log_C_1_1' ; 'log_C_4_4' ; 'log_I_1_1'  ; 'log_I_4_4' ; 'log_N_1_1' ; 'log_N_4_4' ; 'log_F_1_1' ; 'log_F_4_4' ; 'log_E_1_1' ; 'log_E_4_4' };
+opts.vars(:,3) = { 'log_L_1_1' ; 'log_L_4_4' ; 'log_C_1_1' ; 'log_C_4_4' ; 'log_I_1_1'  ; 'log_I_4_4' ; 'log_N_1_1' ; 'log_N_4_4' ; 'log_F_1_1' ; 'log_F_4_4' ; 'log_E_1_1' ; 'log_E_4_4' };
+opts.vars(:,4) = { 'log_L_1_1' ; 'log_L_4_4' ; 'log_C_1_1' ; 'log_C_4_4' ; 'log_I_1_1'  ; 'log_I_4_4' ; 'log_N_1_1' ; 'log_N_4_4' ; 'log_F_1_1' ; 'log_F_4_4' ; 'log_E_1_1' ; 'log_E_4_4' };
 
-opts.vars_names = { '$log L_{1,1}$' ; '$log L_{2,2}$' ; '$log C_{1,1}$' ; '$log C_{2,2}$' ; '$log I_{1,1}$' ; '$log I_{2,2}$' ; '$log N_{1,1}$' ; '$log N_{2,2}$' ; '$log F_{1,1}$' ; '$log F_{2,2}$' ; '$log E_{1,1}$' ; '$log E_{2,2}$' };
+opts.vars_names = { '$log L_{1,1}$' ; '$log L_{4,4}$' ; '$log C_{1,1}$' ; '$log C_{4,4}$' ; '$log I_{1,1}$' ; '$log I_{4,4}$' ; '$log N_{1,1}$' ; '$log N_{4,4}$' ; '$log F_{1,1}$' ; '$log F_{4,4}$' ; '$log E_{1,1}$' ; '$log E_{4,4}$' };
 
 opts.plot_rows = 3;
 opts.plot_cols = 4;

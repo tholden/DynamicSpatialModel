@@ -1,4 +1,4 @@
-%clear global; clear;  
+clear global; clear;  
 close all;
 %dbstop if error
 global first_run
@@ -10,26 +10,27 @@ run_singlesimulation = 1; % single time-series simulation
 run_steadysolver = 1; % stand-alone steady state solver
 
 % Parameters
-% param_thetaN = 0.8; 
+% param_thetaN = 0.7994; 
 % param_Omega = 1.7; 
 % param_lambda = 0.05; 
+% load('../Results/lowlambda_lowomega.mat')
 
 % param_thetaN = 4;  
-% param_Omega = 2.31908;;  
+% param_Omega = 2.31908;
 % param_lambda = 0.1; 
+% load('../Results/highlambda_highomega_SSinit.mat')
 
 % param_thetaN = 1.598;  
 % param_Omega = 1.7;  
 % param_lambda = 0.1; 
+% load('../Results/highlambda_lowomega.mat')
 
-% param_thetaN = 2.5369;  
-% param_Omega = 2.31908;  
-% param_lambda = 0.05;
-
-
-param_thetaN = 0.7994;  
-param_Omega = 1.7;  
+param_thetaN = 2.5369;  
+param_Omega = 2.31908;  
 param_lambda = 0.05;
+load('../Results/lowlambda_highomega.mat')
+
+
 
 param_Phi2 = 4; %4
 param_PhiL = 2; %2
@@ -37,7 +38,7 @@ param_zeta = 8; %8
 save('param_vals.mat')
 
 %% Solve steady state 
-if logical(run_steadysolver) && ~logical(run_singlesimulation)
+if logical(run_steadysolver)% && ~logical(run_singlesimulation)
 global E_by_F_x N_x F_x K_x H_x Q_x par  
 SpatialPointsPerDimension = 7; % need to also change in mod file if simulating model
 param.thetaN = param_thetaN;
@@ -106,14 +107,14 @@ if logical(run_singlesimulation)
 
 dynare DynamicSpatialModel
 
-% change for alternative grid sizes
-disp('*-- City vs rural statistics:  --------*')
-disp(['Average population ratio: ',num2str(mean(exp(log_N_4_4))/mean(exp(log_N_1_1)))]);
-disp(['Average capital ratio: ',num2str(mean(exp(log_K_4_4))/mean(exp(log_K_1_1)))]);
-disp(['Average hours per head ratio: ',num2str(mean(exp(log_H_4_4)) * mean(exp(log_N_1_1))/( mean(exp(log_H_1_1)) * mean(exp(log_N_4_4))))]);
-disp(['Average eating per head ratio: ',num2str(mean(exp(log_E_4_4)) * mean(exp(log_N_1_1))/( mean(exp(log_E_1_1)) * mean(exp(log_N_4_4))))]);
-disp(['Average consumption per head ratio: ',num2str(mean(exp(log_C_4_4)) * mean(exp(log_N_1_1))/( mean(exp(log_C_1_1)) * mean(exp(log_N_4_4))))]);
-disp(['Average food production ratio: ',num2str(mean(exp(log_F_1_1))/mean(exp(log_F_4_4)))]);
+% % change for alternative grid sizes
+% disp('*-- City vs rural statistics:  --------*')
+% disp(['Average population ratio: ',num2str(mean(exp(log_N_4_4))/mean(exp(log_N_1_1)))]);
+% disp(['Average capital ratio: ',num2str(mean(exp(log_K_4_4))/mean(exp(log_K_1_1)))]);
+% disp(['Average hours per head ratio: ',num2str(mean(exp(log_H_4_4)) * mean(exp(log_N_1_1))/( mean(exp(log_H_1_1)) * mean(exp(log_N_4_4))))]);
+% disp(['Average eating per head ratio: ',num2str(mean(exp(log_E_4_4)) * mean(exp(log_N_1_1))/( mean(exp(log_E_1_1)) * mean(exp(log_N_4_4))))]);
+% disp(['Average consumption per head ratio: ',num2str(mean(exp(log_C_4_4)) * mean(exp(log_N_1_1))/( mean(exp(log_C_1_1)) * mean(exp(log_N_4_4))))]);
+% disp(['Average food production ratio: ',num2str(mean(exp(log_F_1_1))/mean(exp(log_F_4_4)))]);
 
 save(['../Results/model_2_thetaN',num2str(param_thetaN),'_PhiL',num2str(param_PhiL),'_Phi2',num2str(param_Phi2),'_Omega',num2str(param_Omega),'_zeta',num2str(param_zeta),'_lambda',num2str(param_lambda),'.mat'])
 delete('param_vals.mat')
