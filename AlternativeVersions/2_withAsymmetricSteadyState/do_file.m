@@ -1,5 +1,5 @@
 clear global; clear;  
-close all;
+%close all;
 %dbstop if error
 global first_run
 first_run=1;
@@ -10,25 +10,25 @@ run_singlesimulation = 1; % single time-series simulation
 run_steadysolver = 1; % stand-alone steady state solver
 
 % Parameters
-% param_thetaN = 0.7994; 
-% param_Omega = 1.7; 
-% param_lambda = 0.05; 
-% load('../Results/lowlambda_lowomega.mat')
+load('../Results/lowlambda_lowomega_SSinit.mat')
+param_thetaN = 0.7994; 
+param_Omega = 1.7; 
+param_lambda = 0.05; 
 
+% load('../Results/highlambda_highomega_SSinit.mat')
 % param_thetaN = 4;  
 % param_Omega = 2.31908;
 % param_lambda = 0.1; 
-% load('../Results/highlambda_highomega_SSinit.mat')
 
+% load('../Results/highlambda_lowomega_SSinit.mat')
 % param_thetaN = 1.598;  
 % param_Omega = 1.7;  
 % param_lambda = 0.1; 
-% load('../Results/highlambda_lowomega.mat')
 
-param_thetaN = 2.5369;  
-param_Omega = 2.31908;  
-param_lambda = 0.05;
-load('../Results/lowlambda_highomega.mat')
+% load('../Results/lowlambda_highomega_SSinit.mat')
+% param_thetaN = 2.5369;  
+% param_Omega = 2.31908;  
+% param_lambda = 0.05;
 
 
 
@@ -116,7 +116,7 @@ dynare DynamicSpatialModel
 % disp(['Average consumption per head ratio: ',num2str(mean(exp(log_C_4_4)) * mean(exp(log_N_1_1))/( mean(exp(log_C_1_1)) * mean(exp(log_N_4_4))))]);
 % disp(['Average food production ratio: ',num2str(mean(exp(log_F_1_1))/mean(exp(log_F_4_4)))]);
 
-save(['../Results/model_2_thetaN',num2str(param_thetaN),'_PhiL',num2str(param_PhiL),'_Phi2',num2str(param_Phi2),'_Omega',num2str(param_Omega),'_zeta',num2str(param_zeta),'_lambda',num2str(param_lambda),'.mat'])
+save(['../Results/model_2_sim_thetaN',num2str(param_thetaN),'_PhiL',num2str(param_PhiL),'_Phi2',num2str(param_Phi2),'_Omega',num2str(param_Omega),'_zeta',num2str(param_zeta),'_lambda',num2str(param_lambda),'.mat'])
 delete('param_vals.mat')
 end
 
