@@ -17,7 +17,7 @@
     @#define SpatialShockProcesses = SpatialShockProcesses + [ "AT", "0", "Inf", "1", "0.9", "0.01", "exp(-zeta*@)#" ]
     %@#define SpatialShockProcesses = SpatialShockProcesses + [ "Utilde_shock", "0", "Inf", "1", "0", "0.001", "exp(-zeta*@)#" ]
 @#else
-    @#define SpatialShockProcesses = SpatialShockProcesses + [ "AT", "0", "Inf", "1", "0.9", "0.01", "(exp(-zeta*@+zeta*dBar)+exp(zeta*@-zeta*dBar))/(exp(zeta*dBar)+exp(-zeta*dBar))#" ]
+    @#define SpatialShockProcesses = SpatialShockProcesses + [ "AT", "0", "Inf", "1", "0.9", "0.047", "(exp(-zeta*@+zeta*dBar)+exp(zeta*@-zeta*dBar))/(exp(zeta*dBar)+exp(-zeta*dBar))#" ]
     %@#define SpatialShockProcesses = SpatialShockProcesses + [ "Utilde_shock", "0", "Inf", "1", "0", "0.001", "(exp(-zeta*@+zeta*dBar)+exp(zeta*@-zeta*dBar))/(exp(zeta*dBar)+exp(-zeta*dBar))#" ]
 
 @#endif
@@ -487,6 +487,6 @@ check;
 @#if Deterministic
     simul( periods = 10000, maxit = 1000000, tolf = 1e-8, tolx = 1e-8, stack_solve_algo = 7, solve_algo = 0 ); // endogenous_terminal_period
 @#else
-    %stoch_simul( order = 1, irf = 400, periods = 0, nocorr, nofunctions, nodisplay, nograph, irf_shocks = ( epsilon_AT_1_1, epsilon_AT_4_4, epsilon_GA, epsilon_GN, epsilon_tau, epsilon_phi, epsilon_beta ) ); // k_order_solver
-    stoch_simul( order = 1, irf = 0, periods = 10000, nocorr, nofunctions, nodisplay, nograph ); // k_order_solver
+    stoch_simul( order = 1, irf = 400, periods = 0, nocorr, nofunctions, nodisplay, nograph, irf_shocks = ( epsilon_AT_1_1, epsilon_AT_4_4, epsilon_GA, epsilon_GN, epsilon_tau, epsilon_phi, epsilon_beta ) ); // k_order_solver
+    %stoch_simul( order = 1, irf = 0, periods = 10000, nocorr, nofunctions, nodisplay, nograph ); // k_order_solver
 @#endif

@@ -1,69 +1,87 @@
-clear; close all;
+clear; %close all;
 
-opts.results_files = 'model_2_sim_thetaN0.7994_PhiL2_Phi24_Omega1.7_zeta8_lambda0.05';
+opts.results_files = 'model_2_sim_thetaN0.7994_PhiL2_Phi24_Omega1.7_zeta8_lambda0.05_AT0.0125';
+% opts.results_files = 'model_2_sim_thetaN4_PhiL2_Phi24_Omega2.3191_zeta8_lambda0.1';
+% opts.results_files = 'model_2_sim_thetaN1.598_PhiL2_Phi24_Omega1.7_zeta8_lambda0.1';
+% opts.results_files = 'model_2_sim_thetaN2.5369_PhiL2_Phi24_Omega2.3191_zeta8_lambda0.05';
 opts.SpatialPointsPerDimension = 7;
-%%
+opts.SpatialPoints = opts.SpatialPointsPerDimension*opts.SpatialPointsPerDimension;
+opts.simulation_length = 10000;
+
+%% 
 load(['Results/',opts.results_files,'.mat'],'oo_','M_')
 
-for ii=1:opts.SpatialPointsPerDimension
-    for jj=1:opts.SpatialPointsPerDimension
-        N{ii,jj} = oo_.endo_simul(strcmp(cellstr(M_.endo_names),['log_N_',num2str(ii),'_',num2str(jj)]),:);
-        K{ii,jj} = oo_.endo_simul(strcmp(cellstr(M_.endo_names),['log_K_',num2str(ii),'_',num2str(jj)]),:);
-        Y{ii,jj} = oo_.endo_simul(strcmp(cellstr(M_.endo_names),['log_Y_',num2str(ii),'_',num2str(jj)]),:);
-    end
+mlv_simulation;
+simulation_plots;
+
+
+%% Persistence
+
+% Plot auto-covariance functions
+% figure;
+% subplot(3,1,1); autocorr(Nx(1,:)); title('ACF N')
+% subplot(3,1,2); autocorr(Kx(1,:)); title('ACF K')
+% subplot(3,1,3); autocorr(Ix(1,:)); title('ACF I')
+% 
+% acf_N = autocorr(Nx(1,:));
+% acf_K = autocorr(Kx(1,:);
+% acf_I = autocorr(Ix(1,:));
+
+%% Moments
+% variance
+average_wage = mean( exp(log_Hx) .* Wx ./ repmat(sum(exp(log_Hx)),opts.SpatialPoints,1) );
+wage_growth = Wx(:,2:end) ./ Wx(:,1:end-1);
+average_wage_growth = average_wage(2:end) ./ average_wage(1:end-1);
+
+variance.Nx = var(exp(log_Nx),1,2);
+variance.Yx = var(log(Yx),1,2);
+variance.Yx = var(log(Yx),1,2);
+variance.wage_growth = var(wage_growth,1,2);
+
+variance.average_wage_growth = var(average_wage_growth);
+
+
+spatial_variance.Nx = var(exp(log_Nx)./mean(exp(log_Nx)));
+spatial_variance.Yx = var((Yx)./mean(Yx));
+
+variance.Yx = reshape(variance.Yx,[opts.SpatialPointsPerDimension,opts.SpatialPointsPerDimension]);
+
+
+plot_moments;
+
+% Aggrgegate variables
+variance.Y = var(log(Y));%./mean(Y));
+
+metric.Y = variance.Y;
+metric.Yx_1_1 = variance.Yx(1);
+metric.Yx_4_4 = variance.Yx(25);
+metric.Nx_1_1 = variance.Nx(1);
+metric.Nx_4_4 = variance.Nx(25);
+metric.wage_growth_1_1 = variance.wage_growth(1);
+metric.wage_growth_4_4 = variance.wage_growth(25);
+variable_names = { 'log_Y' , 'log_Y_1_1' , 'log_Y_4_4' , 'log_N_1_1' , 'log_N_4_4' , 'wagegrowth_1_1' , 'wagegrowth_4_4' };
+
+disp('**---- Dynamic distribution ---**')
+disp( table( metric.Y , metric.Yx_1_1  , metric.Yx_4_4 , metric.Nx_1_1  , metric.Nx_4_4 , metric.wage_growth_1_1 , metric.wage_growth_4_4 , 'VariableNames' , variable_names , 'RowNames' , {'var'} ));
+
+
+spatial_metric.Nx = mean(spatial_variance.Nx);
+spatial_metric.Yx = mean(spatial_variance.Yx);
+variable_names = { 'Nx' , 'Yx' };
+
+disp('**---- Spatial distribution ---**')
+disp( table( spatial_metric.Nx , spatial_metric.Yx , 'VariableNames' , variable_names , 'RowNames' , {'var'} ));
+
+figure;
+hist(400*(average_wage_growth-1)); title('Growth rate in average wage');
+    xlabel('% oty')
+
+figure;
+for t=1:9
+    subplot(3,3,t); hist(400*(wage_growth(:,t+5000)-1));
+    title(['Period t = ',num2str(t+5000)])
+    xlabel('% oty')
 end
+sgtitle('Spatial wage growth distribution')
 
-for t=1:10000
-    Nt(:,:,t) = [ ...
-         N{1,1}(t) N{1,2}(t) N{1,3}(t) N{1,4}(t) N{1,5}(t) N{1,6}(t)  N{1,7}(t) ; ...
-         N{2,1}(t) N{2,2}(t) N{2,3}(t) N{2,4}(t) N{2,5}(t) N{2,6}(t)  N{2,7}(t) ; ...
-         N{3,1}(t) N{3,2}(t) N{3,3}(t) N{3,4}(t) N{3,5}(t) N{3,6}(t)  N{3,7}(t) ; ...
-         N{4,1}(t) N{4,2}(t) N{4,3}(t) N{4,4}(t) N{4,5}(t) N{4,6}(t)  N{4,7}(t) ; ...
-         N{5,1}(t) N{5,2}(t) N{5,3}(t) N{5,4}(t) N{5,5}(t) N{5,6}(t)  N{5,7}(t) ; ...
-         N{6,1}(t) N{6,2}(t) N{6,3}(t) N{6,4}(t) N{6,5}(t) N{6,6}(t)  N{6,7}(t) ; ...
-         N{7,1}(t) N{7,2}(t) N{7,3}(t) N{7,4}(t) N{7,5}(t) N{7,6}(t)  N{7,7}(t) ];
-end
-
-figure;
-subplot(3,3,1); contourf(exp(Nt(:,:,1000))); colorbar; title('N (t=1000)');
-subplot(3,3,2); contourf(exp(Nt(:,:,2000))); colorbar; title('N (t=2000)');
-subplot(3,3,3); contourf(exp(Nt(:,:,3000))); colorbar; title('N (t=3000)');
-subplot(3,3,4); contourf(exp(Nt(:,:,4000))); colorbar; title('N (t=4000)');
-subplot(3,3,5); contourf(exp(Nt(:,:,5000))); colorbar; title('N (t=5000)');
-subplot(3,3,6); contourf(exp(Nt(:,:,6000))); colorbar; title('N (t=6000)');
-subplot(3,3,7); contourf(exp(Nt(:,:,7000))); colorbar; title('N (t=7000)');
-subplot(3,3,8); contourf(exp(Nt(:,:,8000))); colorbar; title('N (t=8000)');
-subplot(3,3,9); contourf(exp(Nt(:,:,9000))); colorbar; title('N (t=9000)');
-
-figure;
-subplot(3,3,1); plot(N{1,1}(4000:4400)); title('log N{1,1}')
-subplot(3,3,2); plot(N{1,4}(4000:4400)); title('log N{1,4}')
-subplot(3,3,3); plot(N{1,7}(4000:4400)); title('log N{1,7}')
-subplot(3,3,4); plot(N{4,1}(4000:4400)); title('log N{4,1}')
-subplot(3,3,5); plot(N{4,4}(4000:4400)); title('log N{4,4}')
-subplot(3,3,6); plot(N{4,7}(4000:4400)); title('log N{4,7}')
-subplot(3,3,7); plot(N{7,1}(4000:4400)); title('log N{7,1}')
-subplot(3,3,8); plot(N{7,4}(4000:4400)); title('log N{7,4}')
-subplot(3,3,9); plot(N{7,7}(4000:4400)); title('log N{7,7}')
-
-figure;
-subplot(3,3,1); plot(K{1,1}(4000:4400)); title('log K{1,1}')
-subplot(3,3,2); plot(K{1,4}(4000:4400)); title('log K{1,4}')
-subplot(3,3,3); plot(K{1,7}(4000:4400)); title('log K{1,7}')
-subplot(3,3,4); plot(K{4,1}(4000:4400)); title('log K{4,1}')
-subplot(3,3,5); plot(K{4,4}(4000:4400)); title('log K{4,4}')
-subplot(3,3,6); plot(K{4,7}(4000:4400)); title('log K{4,7}')
-subplot(3,3,7); plot(K{7,1}(4000:4400)); title('log K{7,1}')
-subplot(3,3,8); plot(K{7,4}(4000:4400)); title('log K{7,4}')
-subplot(3,3,9); plot(K{7,7}(4000:4400)); title('log K{7,7}')
-
-figure;
-subplot(3,3,1); plot(Y{1,1}(4000:4400)); title('log Y{1,1}')
-subplot(3,3,2); plot(Y{1,4}(4000:4400)); title('log Y{1,4}')
-subplot(3,3,3); plot(Y{1,7}(4000:4400)); title('log Y{1,7}')
-subplot(3,3,4); plot(Y{4,1}(4000:4400)); title('log Y{4,1}')
-subplot(3,3,5); plot(Y{4,4}(4000:4400)); title('log Y{4,4}')
-subplot(3,3,6); plot(Y{4,7}(4000:4400)); title('log Y{4,7}')
-subplot(3,3,7); plot(Y{7,1}(4000:4400)); title('log Y{7,1}')
-subplot(3,3,8); plot(Y{7,4}(4000:4400)); title('log Y{7,4}')
-subplot(3,3,9); plot(Y{7,7}(4000:4400)); title('log Y{7,7}')
+   

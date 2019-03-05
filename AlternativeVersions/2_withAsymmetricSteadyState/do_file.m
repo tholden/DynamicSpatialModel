@@ -116,7 +116,8 @@ dynare DynamicSpatialModel
 % disp(['Average consumption per head ratio: ',num2str(mean(exp(log_C_4_4)) * mean(exp(log_N_1_1))/( mean(exp(log_C_1_1)) * mean(exp(log_N_4_4))))]);
 % disp(['Average food production ratio: ',num2str(mean(exp(log_F_1_1))/mean(exp(log_F_4_4)))]);
 
-save(['../Results/model_2_sim_thetaN',num2str(param_thetaN),'_PhiL',num2str(param_PhiL),'_Phi2',num2str(param_Phi2),'_Omega',num2str(param_Omega),'_zeta',num2str(param_zeta),'_lambda',num2str(param_lambda),'.mat'])
+%save(['../Results/model_2_sim_thetaN',num2str(param_thetaN),'_PhiL',num2str(param_PhiL),'_Phi2',num2str(param_Phi2),'_Omega',num2str(param_Omega),'_zeta',num2str(param_zeta),'_lambda',num2str(param_lambda),'_AT0.0125.mat'])
+save(['../Results/model_2_irf_thetaN',num2str(param_thetaN),'_PhiL',num2str(param_PhiL),'_Phi2',num2str(param_Phi2),'_Omega',num2str(param_Omega),'_zeta',num2str(param_zeta),'_lambda',num2str(param_lambda),'_AT0.047.mat'])
 delete('param_vals.mat')
 end
 

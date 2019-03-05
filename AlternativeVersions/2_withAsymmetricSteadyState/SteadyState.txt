@@ -8,7 +8,7 @@ lambda          0.05
 deltaJ          0.01
 deltaK          0.03
 Phi2            4
-PhiL            2
+PhiL            4
 thetaC          0.3644224975609103
 thetaF          0.09110562439022757
 thetaL          0.01518427073170459
