@@ -85,13 +85,13 @@ function E_1_by_F_1_ = GetE_1_by_F_1_homotopy( shape , SpatialPointsPerDimension
         end
     end
      
-     figure;
-        subplot(3,2,1);surf(reshape(E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 1:SpatialPoints ),[SpatialPointsPerDimension,SpatialPointsPerDimension])); title('E_by_F');
-        subplot(3,2,2);surf(reshape(E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( SpatialPoints+1:2*SpatialPoints ),[SpatialPointsPerDimension,SpatialPointsPerDimension])); title('N');
-        subplot(3,2,3);surf(reshape(E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 2*SpatialPoints+1:3*SpatialPoints ),[SpatialPointsPerDimension,SpatialPointsPerDimension])); title('F');
-        subplot(3,2,4);surf(reshape(E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 3*SpatialPoints+1:4*SpatialPoints ),[SpatialPointsPerDimension,SpatialPointsPerDimension])); title('K');
-        subplot(3,2,5);surf(reshape(E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 4*SpatialPoints+1:5*SpatialPoints ),[SpatialPointsPerDimension,SpatialPointsPerDimension])); title('H');
-        subplot(3,2,6);surf(reshape(E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 5*SpatialPoints+1:6*SpatialPoints ),[SpatialPointsPerDimension,SpatialPointsPerDimension])); title('Q');
+%      figure;
+%         subplot(3,2,1);surf(reshape(E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 1:SpatialPoints ),[SpatialPointsPerDimension,SpatialPointsPerDimension])); title('E_by_F');
+%         subplot(3,2,2);surf(reshape(E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( SpatialPoints+1:2*SpatialPoints ),[SpatialPointsPerDimension,SpatialPointsPerDimension])); title('N');
+%         subplot(3,2,3);surf(reshape(E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 2*SpatialPoints+1:3*SpatialPoints ),[SpatialPointsPerDimension,SpatialPointsPerDimension])); title('F');
+%         subplot(3,2,4);surf(reshape(E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 3*SpatialPoints+1:4*SpatialPoints ),[SpatialPointsPerDimension,SpatialPointsPerDimension])); title('K');
+%         subplot(3,2,5);surf(reshape(E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 4*SpatialPoints+1:5*SpatialPoints ),[SpatialPointsPerDimension,SpatialPointsPerDimension])); title('H');
+%         subplot(3,2,6);surf(reshape(E_x_by_F_x_N_x_F_x_K_x_H_x_Q_x_SN_xx_( 5*SpatialPoints+1:6*SpatialPoints ),[SpatialPointsPerDimension,SpatialPointsPerDimension])); title('Q');
                     
     
     first_run=0;

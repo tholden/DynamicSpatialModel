@@ -6,7 +6,7 @@ run_single = 1;
 global first_run
 first_run=1;
 
-SpatialPointsPerDimension = 9; % need to also change in mod file
+SpatialPointsPerDimension = 3; % need to also change in mod file
 E_by_F_1_ = solve_ss(SpatialPointsPerDimension);
 global E_by_F_x N_x F_x K_x H_x Q_x par
 E_x = E_by_F_x .* F_x;
@@ -48,7 +48,7 @@ param_PhiL = 2; %2
 param_zeta = 8; %8
 save('param_vals.mat')
 
-dynare DynamicSpatialModel
+dynare DynamicSpatialModel noclearall
 
 disp(['Max population ratio (5x5 grid): ',num2str(mean(exp(log_N_3_3))/mean(exp(log_N_1_1)))]);
 disp(['Max capital ratio (5x5 grid): ',num2str(mean(exp(log_K_3_3))/mean(exp(log_K_1_1)))]);
