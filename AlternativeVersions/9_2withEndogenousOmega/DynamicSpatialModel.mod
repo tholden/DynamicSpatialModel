@@ -197,7 +197,7 @@ model;
         * ( E@{Index1} / N@{Index1}_LAG ) ^ thetaF
         * ( ( 1 - L@{Index1} ) / N@{Index1}_LAG ) ^ thetaL
         * ( 1 / ( 1 + nu ) * Gamma ^ ( 1 + nu ) - 1 / ( 1 + nu ) * ( HT@{Index1} / N@{Index1}_LAG ) ^ ( 1 + nu ) ) ^ thetaH
-        * ( ( Omega@{Index1}_LAG - N@{Index1}_LAG ) / N_LAG ) ^ thetaN
+        * ( Omega@{Index1}_LAG / N@{Index1}_LAG - 1 ) ^ thetaN //* ( ( Omega@{Index1}_LAG - N@{Index1}_LAG ) / N_LAG ) ^ thetaN
         * ( 1 - SN@{Index1} / N@{Index1}_LAG ) ^ psi1
         * ( dBar - SD@{Index1} / SN@{Index1} ) ^ psi2
         * exp( psi3 * ( 0
@@ -210,7 +210,7 @@ model;
     [name = 'muN@{Index1}']
         muN@{Index1} = beta * ( muN@{Index1}_LEAD * GN_LEAD + U@{Index1}_LEAD ^ ( 1 - varsigma ) + ( 1 - varsigma ) * U@{Index1}_LEAD ^ ( 1 - varsigma ) * (
             thetaH * ( HT@{Index1}_LEAD / N@{Index1} ) ^ ( 1 + nu ) / ( 1 / ( 1 + nu ) * Gamma ^ ( 1 + nu ) - 1 / ( 1 + nu ) * ( HT@{Index1}_LEAD / N@{Index1} ) ^ ( 1 + nu ) )
-            - thetaN * N@{Index1} / ( Omega@{Index1} - N@{Index1} )
+            - thetaN * Omega@{Index1} / ( Omega@{Index1} - N@{Index1} ) // - thetaN * N@{Index1} / ( Omega@{Index1} - N@{Index1} )
             + psi1 * SN@{Index1}_LEAD / ( N@{Index1} - SN@{Index1}_LEAD )
             - ( thetaC + thetaF + thetaL + psi3 )
         ) );
@@ -405,7 +405,7 @@ end;
         Pi_1_ = lambda / ( 1 + lambda ) * ( 1 + lambda ) ^ ( - 1 / lambda ) * SP_1_ ^ ( - 1 / lambda ) * YBar_1_;
         J_1_ = ( ( 1 + lambda ) * SP_1_ * AverageTransportCost_ / P_1_ ) ^ ( 1 / lambda );
         E_1_ = F_1_;
-        QD_1_ = ( 1 - PhiD * ( 1 - GN_ )^2 / 2 + PhiD * ( 1 - GN_ ) * GN_ - Xi_LEAD_ * GWTrend_ * PhiD * ( 1 - GN_ ) * GN_^2 )^(-1);
+        QD_1_ =  ( 1 - PhiD * ( 1 - GN_ )^2 / 2 + PhiD * ( 1 - GN_ ) * GN_ - Xi_LEAD_ * GWTrend_ * PhiD * ( 1 - GN_ ) * GN_^2 )^(-1);
         Omega_1_  = N_1_  + phiD * Xi_LEAD_ * GFTrend_ * ( E_1_ / W_1_ ) * ( thetaN / thetaF ) / ( QD_1_ - Xi_LEAD_ * GWTrend_ * ( 1 - deltaD ) * QD_1_ ); 
         HD_1_ = Omega_1_ * ( 1 - (1-deltaD)/GN_ ) / ( phiD * ( 1 - (PhiD/2) * ( 1 - GN_ )^2 ) ); 
         HT_1_ = H_1_ + HD_1_;
@@ -426,7 +426,7 @@ end;
 
         U_1_LEAD_ = U_1_ * GUTrend_;
         HT_1_LEAD_ = HT_1_ * GN_;
-        muN_1_ = beta_ * ( U_1_LEAD_ ^ ( 1 - varsigma ) + ( 1 - varsigma ) * U_1_LEAD_ ^ ( 1 - varsigma ) * ( thetaH * ( HT_1_LEAD_ / N_1_ ) ^ ( 1 + nu ) / ( 1 / ( 1 + nu ) * Gamma ^ ( 1 + nu ) - 1 / ( 1 + nu ) * ( HT_1_LEAD_ / N_1_ ) ^ ( 1 + nu ) ) - thetaN * N_1_ / ( Omega_1_ - N_1_ ) + psi1 * SN_1_ * GN_ / ( N_1_ - SN_1_ * GN_ ) - ( thetaC + thetaF + thetaL + psi3 ) ) ) / ( 1 - beta_ * GmuNTrend_ * GN_ );
+        muN_1_ = beta_ * ( U_1_LEAD_ ^ ( 1 - varsigma ) + ( 1 - varsigma ) * U_1_LEAD_ ^ ( 1 - varsigma ) * ( thetaH * ( HT_1_LEAD_ / N_1_ ) ^ ( 1 + nu ) / ( 1 / ( 1 + nu ) * Gamma ^ ( 1 + nu ) - 1 / ( 1 + nu ) * ( HT_1_LEAD_ / N_1_ ) ^ ( 1 + nu ) ) - thetaN * Omega_1_ / ( Omega_1_ - N_1_ ) + psi1 * SN_1_ * GN_ / ( N_1_ - SN_1_ * GN_ ) - ( thetaC + thetaF + thetaL + psi3 ) ) ) / ( 1 - beta_ * GmuNTrend_ * GN_ );
 
         @#for VariableName in AggregatedVariables
             @{VariableName}_ = @{VariableName}_1_;

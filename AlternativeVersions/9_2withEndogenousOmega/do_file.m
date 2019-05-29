@@ -7,15 +7,15 @@ run_single = 1;
 
 %% Solve model
 if logical(run_single)
-param_thetaN = 20; %10
+param_thetaN = 1; %10
 param_Phi2 = 4; %4
 param_PhiL = 2; %2
 param_Omega = 3; %3
 param_zeta = 8; %8
 param_lambda = 0.1; %0.1
-param_PhiD = 4;
-param_phiD = 10;
-param_deltaD = 0.2;
+param_PhiD = 0;
+param_phiD = 100;
+param_deltaD = 1;
 save('param_vals.mat')
 
 dynare DynamicSpatialModel
