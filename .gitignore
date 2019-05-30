@@ -9,6 +9,7 @@
 *_static.m
 *_steadystate2.m
 *.mexw64
+*mex.c
 
 *.fig
 *-trim.png
