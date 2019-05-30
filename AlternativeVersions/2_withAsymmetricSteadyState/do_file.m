@@ -1,14 +1,18 @@
 clear; close all;
 %dbstop if error
-
-run_indet = 0;
-run_single = 1;
 global first_run
 first_run=1;
 
-SpatialPointsPerDimension = 3; % need to also change in mod file
-E_by_F_1_ = solve_ss(SpatialPointsPerDimension);
+% options
+run_indet = 0; % indeterminacy/instability region testing
+run_singlesimulation = 0; % single time-series simulation
+run_steadysolver = 1; % stand-alone steady state solver
+
+%% Solve steady state
+if logical(run_steadysolver) && ~logical(run_singlesimulation)
 global E_by_F_x N_x F_x K_x H_x Q_x par
+SpatialPointsPerDimension = 7; % need to also change in mod file if simulating model
+E_by_F_1_ = solve_ss(SpatialPointsPerDimension);
 E_x = E_by_F_x .* F_x;
 Nx = reshape(N_x,[SpatialPointsPerDimension,SpatialPointsPerDimension]);
 Ex = reshape(E_x,[SpatialPointsPerDimension,SpatialPointsPerDimension]);
@@ -17,11 +21,12 @@ Kx = reshape(K_x,[SpatialPointsPerDimension,SpatialPointsPerDimension]);
 Hx = reshape(H_x,[SpatialPointsPerDimension,SpatialPointsPerDimension]);
 Qx = reshape(Q_x,[SpatialPointsPerDimension,SpatialPointsPerDimension]);
 
-Px_by_Qx = ( 1 - par.Phi2 / 2 * ( par.GYTrend_ - 1 ) ^ 2 - par.Phi2 * ( par.GYTrend_ - 1 ) * par.GYTrend_ ) + par.Xi_LEAD_ * par.GSRKTrend_ * par.Phi2 * ( par.GYTrend_ - 1 ) * par.GYTrend_ ^ 2; 
+Px_by_Qx = ( 1 - par.Phi2 / 2 * ( par.GYTrend_ - 1 ) ^ 2 - par.Phi2 * ( par.GYTrend_ - 1 ) * par.GYTrend_ ) + par.Xi_LEAD_ * par.GSRKTrend_ * par.Phi2 * ( par.GYTrend_ - 1 ) * par.GYTrend_ ^ 2;
 Px = Px_by_Qx .* Qx;
 Cx = par.thetaC .* Ex ./ ( par.thetaF .* Px );
 
 cent_pt = round(SpatialPointsPerDimension/2);
+disp(['City vs rural statistics:'])
 disp(['Max population ratio: ',num2str(Nx(cent_pt,cent_pt)/Nx(1,1))]);
 disp(['Max capital ratio: ',num2str(Kx(cent_pt,cent_pt)/Kx(1,1))]);
 disp(['Max hours per head ratio: ',num2str(Hx(cent_pt,cent_pt) * Nx(1,1)/( Hx(1,1) * Nx(cent_pt,cent_pt)))]);
@@ -29,16 +34,10 @@ disp(['Max eating per head ratio: ',num2str(Ex(cent_pt,cent_pt) * Nx(1,1)/( Ex(1
 disp(['Max consumption per head ratio: ',num2str(Cx(cent_pt,cent_pt) * Nx(1,1)/( Cx(1,1) * Nx(cent_pt,cent_pt)))]);
 disp(['Max food production ratio: ',num2str(Fx(1,1)/Fx(cent_pt,cent_pt))]);
 
-% figure;
-% subplot(3,2,1);surf(reshape(E_by_F_x,[SpatialPointsPerDimension,SpatialPointsPerDimension])); title('E_by_F');
-% subplot(3,2,2);surf(N); title('N');
-% subplot(3,2,3);surf(F); title('F');
-% subplot(3,2,4);surf(K); title('K');
-% subplot(3,2,5);surf(H); title('H');
-% subplot(3,2,6);surf(Q); title('Q');
-                
+end
+
 %% Solve model
-if logical(run_single)
+if logical(run_singlesimulation)
 param_thetaN = 5; %10
 param_Omega = 2.5; %3
 param_lambda = 0.1; %0.1
@@ -50,15 +49,14 @@ save('param_vals.mat')
 
 dynare DynamicSpatialModel noclearall
 
-disp(['Max population ratio (5x5 grid): ',num2str(mean(exp(log_N_3_3))/mean(exp(log_N_1_1)))]);
-disp(['Max capital ratio (5x5 grid): ',num2str(mean(exp(log_K_3_3))/mean(exp(log_K_1_1)))]);
-disp(['Max Eating ratio (5x5 grid): ',num2str(mean(exp(log_E_3_3))/mean(exp(log_E_1_1)))]);
-disp(['Max food production ratio (5x5 grid): ',num2str(mean(exp(log_F_1_1))/mean(exp(log_F_3_3)))]);
-
-% disp(['Max population ratio (9x9 grid): ',num2str(mean(exp(log_N_5_5))/mean(exp(log_N_1_1)))]);
-% disp(['Max capital ratio (9x9 grid): ',num2str(mean(exp(log_K_5_5))/mean(exp(log_K_1_1)))]);
-% disp(['Max Eating ratio (9x9 grid): ',num2str(mean(exp(log_E_5_5))/mean(exp(log_E_1_1)))]);
-% disp(['Max food production ratio (9x9 grid): ',num2str(mean(exp(log_F_1_1))/mean(exp(log_F_5_5)))]);
+% change for alternative grid sizes
+disp('*-- City vs rural statistics:  --------*')
+disp(['Average population ratio: ',num2str(mean(exp(log_N_3_3))/mean(exp(log_N_1_1)))]);
+disp(['Average capital ratio: ',num2str(mean(exp(log_K_3_3))/mean(exp(log_K_1_1)))]);
+disp(['Average hours per head ratio: ',num2str(mean(exp(log_H_3_3)) * mean(exp(log_N_1_1))/( mean(exp(log_H_1_1)) * mean(exp(log_N_3_3))))]);
+disp(['Average eating per head ratio: ',num2str(mean(exp(log_E_3_3)) * mean(exp(log_N_1_1))/( mean(exp(log_E_1_1)) * mean(exp(log_N_3_3))))]);
+disp(['Average consumption per head ratio: ',num2str(mean(exp(log_C_3_3)) * mean(exp(log_N_1_1))/( mean(exp(log_C_1_1)) * mean(exp(log_N_3_3))))]);
+disp(['Average food production ratio: ',num2str(mean(exp(log_F_1_1))/mean(exp(log_F_3_3)))]);
 
 save(['../Results/model_2_thetaN',num2str(param_thetaN),'_PhiL',num2str(param_PhiL),'_Phi2',num2str(param_Phi2),'_Omega',num2str(param_Omega),'_zeta',num2str(param_zeta),'_lambda',num2str(param_lambda),'.mat'])
 delete('param_vals.mat')
@@ -66,7 +64,7 @@ end
 
 %% Indeterminacy
 if logical(run_indet)
-    
+
 % Choose 2 parameters
 parameter1_string=['\theta_y'];
 parameter2_string=['\theta_{\pi}'];
@@ -92,44 +90,44 @@ for jj=1:length(param1_vec)
     eval([param2_name,'= param2_vec(ii);']);
     save('param_vals.mat','-append',param1_name,param2_name)
 
-    dynare DynamicSpatialModel 
- 
+    dynare DynamicSpatialModel
+
     %the following corrected for 4.3.3
     qz_criterium = 1.000001;
     %no of eigenvalue(s) larger than 1 in modulus - 4.3.3
     n_explod = nnz(abs(oo_.dr.eigval) > qz_criterium);
     %new definition for nfwrd for 4.3.3 - M_.endo_nbr-M_.nstatic-M_.npred
     nfwrd = M_.endo_nbr-M_.nstatic-M_.npred;
-    
+
     load('indet.mat')
     if nfwrd == n_explod     %%IF # OF NON-PREDETERMINED VARIABLES == RANK -->UNIQUE EQUILIBRIUM, SADDLE PATH STABLE
        ind(jj,ii)=0;
-    elseif nfwrd < n_explod   %%IF # OF NON-PREDETERMINED VARIABLES  < RANK -->INSTABILITY  
-       ind(jj,ii)=3;        
+    elseif nfwrd < n_explod   %%IF # OF NON-PREDETERMINED VARIABLES  < RANK -->INSTABILITY
+       ind(jj,ii)=3;
     elseif nfwrd > n_explod   %%IF # OF NON-PREDETERMINED VARIABLES  > RANK -->INDETERMINACY
        ind(jj,ii)=4;
     end
-    
+
     save('indet.mat','ind')
-    
+
     end
 end
-   
+
 figure;
 markersize=1;
 spy(ind(:,:)==0,'r.');
-hold on 
+hold on
 spy(ind(:,:)==4,'k.');
-hold on 
+hold on
 spy(ind(:,:)==3,'g.');
 axis xy;
 set(gca,'XTick',1:1:length(param2_vec));
 set(gca,'XTicklabel',{param2_min:param2_step:param2_max});
 set(gca,'YTick',1:1:length(param1_vec));
 set(gca,'YTicklabel',{param1_min:param1_step:param1_max});
-title('Indeterminacy','fontsize',9); 
+title('Indeterminacy','fontsize',9);
 xlabel(parameter2_string,'fontsize',9);
-ylabel(parameter1_string,'fontsize',9);    
+ylabel(parameter1_string,'fontsize',9);
 legend('Determinacy','Indeterminacy','Instability',-1);
 
 
